@@ -1,0 +1,464 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <title>Total Fit - Evidencija</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: #0e1111; color: #fff; padding: 20px; min-height: 100vh; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #222; }
+        .klub-logo { height: 45px; width: auto; object-fit: contain; }
+        
+        .btn-nazad { background: transparent; color: #fff; border: 1px solid #fff; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
+        .btn-nazad:hover { background: #fff; color: #000; }
+        .btn-glavni { background: #3ac0ff; color: #000; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        
+        .kontrole { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .input-polje { padding: 10px; background: #161a1d; border: 1px solid #222; color: #fff; border-radius: 6px; }
+        
+        .clanovi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
+        .clan-kartica { background: #161a1d; border: 1px solid #222; padding: 15px; border-radius: 8px; }
+        
+        .clanovi-lista { display: block; width: 100%; overflow-x: auto; }
+        .tabela-clanovi { width: 100%; border-collapse: collapse; text-align: left; background: #161a1d; border-radius: 8px; overflow: hidden; }
+        .tabela-clanovi th, .tabela-clanovi td { padding: 12px 15px; border-bottom: 1px solid #222; }
+        .tabela-clanovi th { background: #1c2126; color: #3ac0ff; font-size: 0.9rem; text-transform: uppercase; }
+        .tabela-clanovi tr:last-child td { border-bottom: none; }
+        .tabela-clanovi tr:hover { background: #21262d; }
+
+        .tag { padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; border: 1px solid #333; margin-right: 5px; font-weight: bold; }
+        .tag-fitness { color: #ff52b0; border-color: #ff52b0; }
+        .tag-bjj { color: #3ac0ff; border-color: #3ac0ff; }
+        
+        .btn-akcija { background: #21262d; border: 1px solid #333; color: #ccc; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; margin-top: 10px; }
+        
+        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content:center; align-items:center; z-index:1000; }
+        .modal-content { background: #161a1d; padding: 20px; border-radius: 10px; width: 350px; border: 1px solid #333; }
+
+        /* TOAST OBAVEŠTENJA */
+        .toast { visibility: hidden; min-width: 250px; background-color: #21262d; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 9999; left: 50%; transform: translateX(-50%); bottom: 20px; font-size: 1rem; border: 1px solid #3ac0ff; box-shadow: 0 4px 15px rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.3s, bottom 0.3s; pointer-events: none; }
+        .toast.prikazi { visibility: visible; opacity: 1; bottom: 40px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <div style="display: flex; align-items: center; gap: 15px;">
+            <button class="btn-nazad" onclick="window.location.href='index.html'">⬅️ Nazad</button>
+            <h1 style="color: #3ac0ff;">Evidencija</h1>
+        </div>
+        <button class="btn-glavni" onclick="otvoriModalClana()">➕ Dodaj Člana</button>
+    </header>
+
+    <div class="kontrole">
+        <input type="text" id="pretragaInp" class="input-polje" placeholder="Pretraži..." oninput="filtrirajTabelu()">
+        <select id="filterStatus" class="input-polje" onchange="filtrirajTabelu()">
+            <option value="svi">Svi statusi</option>
+            <option value="Aktivan">Aktivni</option>
+            <option value="Neaktivan">Neaktivni</option>
+        </select>
+        <select id="filterProgram" class="input-polje" onchange="filtrirajTabelu()">
+            <option value="svi">Svi programi</option>
+            <option value="fitness">Fitnes</option>
+            <option value="bjj">BJJ</option>
+        </select>
+        <button id="btnPrikaz" class="input-polje" style="cursor:pointer; background:#21262d;" onclick="togglePrikaz()">Prikaz: Lista 📋</button>
+    </div>
+
+    <div class="clanovi-grid" id="gridClanovi"></div>
+
+    <div class="modal" id="chatModal">
+        <div class="modal-content">
+            <h3 id="chatNaslov" style="margin-bottom:10px;">Šalji poruku</h3>
+            <input type="hidden" id="aktivan_clan_id">
+            <textarea id="porukaTekst" style="width:100%; height:80px; background:#000; color:#fff; border:1px solid #333; padding:10px;"></textarea>
+            <div style="margin-top:10px; display:flex; gap:10px;">
+                <button class="btn-akcija" onclick="posaljiPoruku()">Pošalji</button>
+                <button class="btn-akcija" onclick="zatvoriModal('chatModal')">Zatvori</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="clanModal">
+        <div class="modal-content">
+            <h3 style="margin-bottom:15px;">Dodaj novog člana</h3>
+            <form id="dodajClanForma" onsubmit="sacuvajNovogClana(event)">
+                <input type="text" id="novi_ime" placeholder="Ime i prezime" class="input-polje" style="width:100%; margin-bottom:10px;" required>
+                <input type="text" id="novi_tel" placeholder="Telefon" class="input-polje" style="width:100%; margin-bottom:10px;">
+                <label style="font-size: 0.8rem; color: #888;">Datum rođenja</label>
+                <input type="date" id="novi_datum_rodjenja" class="input-polje" style="width:100%; margin-bottom:10px;">
+                <input type="text" id="novi_adresa" placeholder="Ulica i broj" class="input-polje" style="width:100%; margin-bottom:10px;">
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <input type="text" id="novi_grad" placeholder="Grad" class="input-polje" style="flex: 2; min-width: 0;">
+                    <input type="text" id="novi_postanski_broj" placeholder="Pošt. broj" class="input-polje" style="flex: 1; min-width: 0;">
+                </div>
+                <label style="font-size: 0.8rem; color: #888; display:block; margin-bottom:5px;">Država</label>
+                <select id="novi_drzava" class="input-polje" style="width:100%; margin-bottom:10px;">
+                    <option value="AT" selected>AT - Austrija</option>
+                    <option value="RS">RS - Srbija</option>
+                    <option value="HR">HR - Hrvatska</option>
+                    <option value="BA">BA - Bosna i Hercegovina</option>
+                    <option disabled>──────────</option>
+                    <option value="AL">AL - Albanija</option>
+                    <option value="AR">AR - Argentina</option>
+                    <option value="AU">AU - Australija</option>
+                    <option value="BE">BE - Belgija</option>
+                    <option value="BG">BG - Bugarska</option>
+                    <option value="BR">BR - Brazil</option>
+                    <option value="ME">ME - Crna Gora</option>
+                    <option value="CZ">CZ - Češka</option>
+                    <option value="DK">DK - Danska</option>
+                    <option value="EG">EG - Egipat</option>
+                    <option value="FI">FI - Finska</option>
+                    <option value="FR">FR - Francuska</option>
+                    <option value="GR">GR - Grčka</option>
+                    <option value="NL">NL - Holandija</option>
+                    <option value="IE">IE - Irska</option>
+                    <option value="IT">IT - Italija</option>
+                    <option value="IL">IL - Izrael</option>
+                    <option value="JP">JP - Japan</option>
+                    <option value="ZA">ZA - Južnoafrička Republika</option>
+                    <option value="CA">CA - Kanada</option>
+                    <option value="CN">CN - Kina</option>
+                    <option value="CY">CY - Kipar</option>
+                    <option value="HU">HU - Mađarska</option>
+                    <option value="MT">MT - Malta</option>
+                    <option value="MX">MX - Meksiko</option>
+                    <option value="DE">DE - Nemačka</option>
+                    <option value="NO">NO - Norveška</option>
+                    <option value="PL">PL - Poljska</option>
+                    <option value="PT">PT - Portugalija</option>
+                    <option value="RO">RO - Rumunija</option>
+                    <option value="RU">RU - Rusija</option>
+                    <option value="US">US - SAD</option>
+                    <option value="MK">MK - Severna Makedonija</option>
+                    <option value="SK">SK - Slovačka</option>
+                    <option value="SI">SI - Slovenija</option>
+                    <option value="ES">ES - Španija</option>
+                    <option value="CH">CH - Švajcarska</option>
+                    <option value="SE">SE - Švedska</option>
+                    <option value="TR">TR - Turska</option>
+                    <option value="AE">AE - Ujedinjeni Arapski Emirati</option>
+                    <option value="GB">GB - Velika Britanija</option>
+                    <option value="UA">UA - Ukrajina</option>
+                </select>
+                <input type="email" id="novi_email" placeholder="E-mail (opciono)" class="input-polje" style="width:100%; margin-bottom:10px;">
+                <div style="margin-bottom:15px;">
+                    <label><input type="checkbox" id="novi_fit"> Fitnes</label>
+                    <label style="margin-left:15px;"><input type="checkbox" id="novi_bjj"> BJJ</label>
+                </div>
+                <button type="submit" class="btn-glavni">Sačuvaj</button>
+                <button type="button" class="btn-akcija" onclick="zatvoriModal('clanModal')">Odustani</button>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal" id="editClanModal">
+        <div class="modal-content">
+            <h3 style="margin-bottom:15px;">Izmeni člana</h3>
+            <form id="editClanForma" onsubmit="sacuvajIzmeneClana(event)">
+                <input type="hidden" id="edit_id">
+                <input type="text" id="edit_ime" placeholder="Ime i prezime" class="input-polje" style="width:100%; margin-bottom:10px;" required>
+                <input type="text" id="edit_tel" placeholder="Telefon" class="input-polje" style="width:100%; margin-bottom:10px;">
+                <label style="font-size: 0.8rem; color: #888;">Datum rođenja</label>
+                <input type="date" id="edit_datum_rodjenja" class="input-polje" style="width:100%; margin-bottom:10px;">
+                <input type="text" id="edit_adresa" placeholder="Ulica i broj" class="input-polje" style="width:100%; margin-bottom:10px;">
+                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                    <input type="text" id="edit_grad" placeholder="Grad" class="input-polje" style="flex: 2; min-width: 0;">
+                    <input type="text" id="edit_postanski_broj" placeholder="Pošt. broj" class="input-polje" style="flex: 1; min-width: 0;">
+                </div>
+                <label style="font-size: 0.8rem; color: #888; display:block; margin-bottom:5px;">Država</label>
+                <select id="edit_drzava" class="input-polje" style="width:100%; margin-bottom:10px;">
+                    <option value="AT">AT - Austrija</option>
+                    <option value="RS">RS - Srbija</option>
+                    <option value="HR">HR - Hrvatska</option>
+                    <option value="BA">BA - Bosna i Hercegovina</option>
+                    <option disabled>──────────</option>
+                    <option value="AL">AL - Albanija</option>
+                    <option value="AR">AR - Argentina</option>
+                    <option value="AU">AU - Australija</option>
+                    <option value="BE">BE - Belgija</option>
+                    <option value="BG">BG - Bugarska</option>
+                    <option value="BR">BR - Brazil</option>
+                    <option value="ME">ME - Crna Gora</option>
+                    <option value="CZ">CZ - Češka</option>
+                    <option value="DK">DK - Danska</option>
+                    <option value="EG">EG - Egipat</option>
+                    <option value="FI">FI - Finska</option>
+                    <option value="FR">FR - Francuska</option>
+                    <option value="GR">GR - Grčka</option>
+                    <option value="NL">NL - Holandija</option>
+                    <option value="IE">IE - Irska</option>
+                    <option value="IT">IT - Italija</option>
+                    <option value="IL">IL - Izrael</option>
+                    <option value="JP">JP - Japan</option>
+                    <option value="ZA">ZA - Južnoafrička Republika</option>
+                    <option value="CA">CA - Kanada</option>
+                    <option value="CN">CN - Kina</option>
+                    <option value="CY">CY - Kipar</option>
+                    <option value="HU">HU - Mađarska</option>
+                    <option value="MT">MT - Malta</option>
+                    <option value="MX">MX - Meksiko</option>
+                    <option value="DE">DE - Nemačka</option>
+                    <option value="NO">NO - Norveška</option>
+                    <option value="PL">PL - Poljska</option>
+                    <option value="PT">PT - Portugalija</option>
+                    <option value="RO">RO - Rumunija</option>
+                    <option value="RU">RU - Rusija</option>
+                    <option value="US">US - SAD</option>
+                    <option value="MK">MK - Severna Makedonija</option>
+                    <option value="SK">SK - Slovačka</option>
+                    <option value="SI">SI - Slovenija</option>
+                    <option value="ES">ES - Španija</option>
+                    <option value="CH">CH - Švajcarska</option>
+                    <option value="SE">SE - Švedska</option>
+                    <option value="TR">TR - Turska</option>
+                    <option value="AE">AE - Ujedinjeni Arapski Emirati</option>
+                    <option value="GB">GB - Velika Britanija</option>
+                    <option value="UA">UA - Ukrajina</option>
+                </select>
+                <input type="email" id="edit_email" placeholder="E-mail" class="input-polje" style="width:100%; margin-bottom:10px;">
+                <div style="margin-bottom:15px;">
+                    <label><input type="checkbox" id="edit_fit"> Fitnes</label>
+                    <label style="margin-left:15px;"><input type="checkbox" id="edit_bjj"> BJJ</label>
+                </div>
+                <div style="margin-bottom:15px;">
+                    <label style="font-size: 0.8rem; color: #888; display:block; margin-bottom:5px;">Status</label>
+                    <select id="edit_status" class="input-polje" style="width:100%;">
+                        <option value="Aktivan">Aktivan</option>
+                        <option value="Neaktivan">Neaktivan</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn-glavni">Sačuvaj izmene</button>
+                <button type="button" class="btn-akcija" onclick="zatvoriModal('editClanModal')">Odustani</button>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        let sviClanovi = [];
+        let prikazMode = 'grid'; // 'grid' ili 'lista'
+        let toastTimeout;
+
+        function prikaziObavestenje(poruka, jeGreska = false) {
+            let toast = document.getElementById("toast-obavestenje");
+            if (!toast) {
+                toast = document.createElement("div");
+                toast.id = "toast-obavestenje";
+                document.body.appendChild(toast);
+            }
+            toast.className = "toast";
+            toast.innerText = poruka;
+            toast.style.borderColor = jeGreska ? "#dc3545" : "#3ac0ff";
+            void toast.offsetWidth; // Pokreće animaciju iznova
+            toast.classList.add("prikazi");
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => { toast.classList.remove("prikazi"); }, 3000);
+        }
+
+        async function ucitaj() {
+            const res = await fetch('/api/admin/clanovi?t=' + new Date().getTime(), {
+                cache: 'no-store'
+            });
+            sviClanovi = await res.json();
+            const params = new URLSearchParams(window.location.search);
+            if(params.get('filter')) document.getElementById('filterProgram').value = params.get('filter');
+            filtrirajTabelu();
+        }
+
+        function filtrirajTabelu() {
+            const tekst = document.getElementById('pretragaInp').value.toLowerCase();
+            const status = document.getElementById('filterStatus').value;
+            const prog = document.getElementById('filterProgram').value;
+            
+            const filtrirani = sviClanovi.filter(c => {
+                const matchTekst = c.ime_prezime.toLowerCase().includes(tekst);
+                const matchStatus = (status === 'svi' || c.status === status);
+                const matchProg = (prog === 'svi' || (prog === 'fitness' && c.fitness === 1) || (prog === 'bjj' && c.bjj === 1));
+                return matchTekst && matchStatus && matchProg;
+            });
+            prikazi(filtrirani);
+        }
+
+        function togglePrikaz() {
+            prikazMode = prikazMode === 'grid' ? 'lista' : 'grid';
+            document.getElementById('btnPrikaz').innerText = prikazMode === 'grid' ? 'Prikaz: Lista 📋' : 'Prikaz: Kartice 🗂️';
+            filtrirajTabelu();
+        }
+
+        function prikazi(lista) {
+            const kontejner = document.getElementById('gridClanovi');
+            
+            if (prikazMode === 'grid') {
+                kontejner.className = 'clanovi-grid';
+                kontejner.innerHTML = lista.map(c => `
+                    <div class="clan-kartica">
+                        <strong style="font-size: 1.1rem; color: #3ac0ff;">${c.ime_prezime}</strong>
+                        <div style="font-size:0.85rem; color:#aaa; margin-top:8px;">📞 ${c.telefon || 'Nema tel.'}</div>
+                        <div style="font-size:0.85rem; color:#aaa; margin-top:4px;">📧 ${c.email || 'Nema e-mail'}</div>
+                        <div style="font-size:0.85rem; color:#aaa; margin-top:4px;">🏠 ${[c.adresa, c.postanski_broj, c.grad, c.drzava].filter(x => x && x.trim() !== '').join(', ') || 'Nema adrese'}</div>
+                        <div style="font-size:0.85rem; color:#aaa; margin-top:4px;">🎂 ${c.datum_rodjenja ? c.datum_rodjenja.split('-').reverse().join('.') : 'Nema datuma'}</div>
+                        <div style="margin-top:10px;">
+                            ${c.fitness ? '<span class="tag tag-fitness">FITNES</span>' : ''}
+                            ${c.bjj ? '<span class="tag tag-bjj">BJJ</span>' : ''}
+                        </div>
+                        <button class="btn-akcija" onclick="otvoriChat(${c.id}, '${c.ime_prezime}')">💬 Poruka</button>
+                        <button class="btn-akcija" onclick="otvoriEditModal(${c.id})">✏️ Izmeni</button>
+                    </div>`).join('');
+            } else {
+                kontejner.className = 'clanovi-lista';
+                let html = `<table class="tabela-clanovi">
+                    <thead><tr>
+                        <th>Ime i prezime</th><th>Telefon</th><th>E-mail</th><th>Adresa</th><th>Datum rođenja</th><th>Program</th><th>Akcije</th>
+                    </tr></thead><tbody>`;
+                html += lista.map(c => `
+                    <tr>
+                        <td><strong style="color:#fff;">${c.ime_prezime}</strong></td>
+                        <td><span style="color:#aaa; font-size:0.85rem;">${c.telefon || '/'}</span></td>
+                        <td><span style="color:#aaa; font-size:0.85rem;">${c.email || '/'}</span></td>
+                        <td><span style="color:#aaa; font-size:0.85rem;">${[c.adresa, c.postanski_broj, c.grad, c.drzava].filter(x => x && x.trim() !== '').join(', ') || '/'}</span></td>
+                        <td><span style="color:#aaa; font-size:0.85rem;">${c.datum_rodjenja ? c.datum_rodjenja.split('-').reverse().join('.') : '/'}</span></td>
+                        <td>
+                            ${c.fitness ? '<span class="tag tag-fitness">FITNES</span>' : ''}
+                            ${c.bjj ? '<span class="tag tag-bjj">BJJ</span>' : ''}
+                        </td>
+                        <td>
+                            <button class="btn-akcija" style="margin:0;" title="Pošalji poruku" onclick="otvoriChat(${c.id}, '${c.ime_prezime}')">💬</button>
+                            <button class="btn-akcija" style="margin:0; margin-left:5px;" title="Izmeni člana" onclick="otvoriEditModal(${c.id})">✏️</button>
+                        </td>
+                    </tr>`).join('');
+                html += `</tbody></table>`;
+                kontejner.innerHTML = html;
+            }
+        }
+
+        function otvoriChat(id, ime) {
+            document.getElementById('aktivan_clan_id').value = id;
+            document.getElementById('chatNaslov').innerText = "Poruka za: " + ime;
+            document.getElementById('chatModal').style.display = 'flex';
+            fetch(`/api/admin/poruke/procitano/${id}`, { method: 'PUT' });
+        }
+
+        function otvoriModalClana() { document.getElementById('clanModal').style.display = 'flex'; }
+        function zatvoriModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        async function posaljiPoruku() {
+            const id = document.getElementById('aktivan_clan_id').value;
+            const txt = document.getElementById('porukaTekst').value;
+            await fetch('/api/admin/poruke/individualna', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify({ clan_id: id, tekst: txt })
+            });
+            zatvoriModal('chatModal');
+            prikaziObavestenje("Poruka poslata klijentu!");
+        }
+        async function sacuvajNovogClana(event) {
+            event.preventDefault(); // Sprečava osvežavanje stranice
+            
+            try {
+                const noviClan = {
+                    ime_prezime: document.getElementById('novi_ime').value,
+                    telefon: document.getElementById('novi_tel').value,
+                    datum_rodjenja: document.getElementById('novi_datum_rodjenja').value,
+                    adresa: document.getElementById('novi_adresa').value,
+                    grad: document.getElementById('novi_grad').value,
+                    postanski_broj: document.getElementById('novi_postanski_broj').value,
+                    drzava: document.getElementById('novi_drzava').value,
+                    email: document.getElementById('novi_email').value,
+                    datum_upisa: new Date().toISOString().split('T')[0],
+                    fitness: document.getElementById('novi_fit').checked ? 1 : 0,
+                    bjj: document.getElementById('novi_bjj').checked ? 1 : 0,
+                    status: 'Aktivan'
+                };
+
+                const res = await fetch('/api/admin/clanovi', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(noviClan)
+                });
+
+                document.getElementById('dodajClanForma').reset();
+                if (res.ok) {
+                    zatvoriModal('clanModal');
+                    await ucitaj(); 
+                    prikaziObavestenje("Član uspešno dodat!");
+                } else {
+                    const errData = await res.json();
+                    prikaziObavestenje("Greška servera pri dodavanju: " + (errData.error || "Nepoznata greška"), true);
+                }
+            } catch (err) {
+                prikaziObavestenje("Sistemska greška: " + err.message, true);
+            }
+        }
+
+        function otvoriEditModal(id) {
+            const c = sviClanovi.find(clan => clan.id === id);
+            if(!c) return;
+
+            document.getElementById('edit_id').value = c.id;
+            document.getElementById('edit_ime').value = c.ime_prezime || '';
+            document.getElementById('edit_tel').value = c.telefon || '';
+            document.getElementById('edit_datum_rodjenja').value = c.datum_rodjenja || '';
+            document.getElementById('edit_adresa').value = c.adresa || '';
+            document.getElementById('edit_grad').value = c.grad || '';
+            document.getElementById('edit_postanski_broj').value = c.postanski_broj || '';
+            document.getElementById('edit_drzava').value = c.drzava || 'AT';
+            document.getElementById('edit_email').value = c.email || '';
+            document.getElementById('edit_fit').checked = c.fitness === 1;
+            document.getElementById('edit_bjj').checked = c.bjj === 1;
+            document.getElementById('edit_status').value = c.status || 'Aktivan';
+
+            document.getElementById('editClanModal').style.display = 'flex';
+        }
+
+        async function sacuvajIzmeneClana(event) {
+            event.preventDefault();
+            
+            try {
+                const id = document.getElementById('edit_id').value;
+                const originalClan = sviClanovi.find(c => c.id == id);
+                
+                if(!originalClan) {
+                    prikaziObavestenje("Član nije pronađen u memoriji! Osveži stranicu.", true);
+                    return;
+                }
+                
+                const azuriranClan = {
+                    ...originalClan, 
+                    ime_prezime: document.getElementById('edit_ime').value,
+                    telefon: document.getElementById('edit_tel').value,
+                    datum_rodjenja: document.getElementById('edit_datum_rodjenja').value,
+                    adresa: document.getElementById('edit_adresa').value,
+                    grad: document.getElementById('edit_grad').value,
+                    postanski_broj: document.getElementById('edit_postanski_broj').value,
+                    drzava: document.getElementById('edit_drzava').value,
+                    email: document.getElementById('edit_email').value,
+                    fitness: document.getElementById('edit_fit').checked ? 1 : 0,
+                    bjj: document.getElementById('edit_bjj').checked ? 1 : 0,
+                    status: document.getElementById('edit_status').value
+                };
+
+                const res = await fetch(`/api/admin/clanovi/${id}`, {
+                    method: 'PUT',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(azuriranClan)
+                });
+
+                if (res.ok) {
+                    zatvoriModal('editClanModal');
+                    await ucitaj(); 
+                    prikaziObavestenje("Podaci uspešno ažurirani!");
+                } else {
+                    const errData = await res.json();
+                    prikaziObavestenje("Greška servera pri izmeni: " + (errData.error || "Nepoznata greška"), true);
+                }
+            } catch (err) {
+                prikaziObavestenje("Sistemska greška: " + err.message, true);
+            }
+        }
+
+        window.onload = ucitaj;
+    </script>
+</body>
+</html>

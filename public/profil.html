@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Total Fit - Moj Profil</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: #0e1111; color: #fff; padding: 15px; display: flex; flex-direction: column; min-height: 100vh; }
+        
+        header { text-align: center; margin: 10px 0 15px 0; flex-shrink: 0; }
+        .klub-logo { height: 45px; width: auto; object-fit: contain; }
+        
+        /* KARTICA PROFILA */
+        .profil-kartica { background: #161a1d; border: 1px solid #222; border-radius: 12px; padding: 15px; text-align: center; border-top: 4px solid #ff52b0; margin-bottom: 15px; flex-shrink: 0; }
+        .clan-ime { font-size: 1.2rem; font-weight: bold; margin-bottom: 2px; }
+        .clan-detalji { margin-top: 10px; font-size: 0.85rem; color: #aaa; display: flex; justify-content: space-around; background: #21262d; padding: 10px; border-radius: 8px; }
+        .clan-detalji span { color: #fff; font-weight: bold; display: block; margin-top: 2px; }
+
+        /* PREKIDAČ ZVUKA */
+        .prekidac-zvuka-kontejner { margin-bottom: 15px; flex-shrink: 0; }
+        .btn-zvuk-toggle { width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; text-align: center; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s ease; }
+        .btn-zvuk-toggle.iskljucen { background: #21262d; color: #888; border: 1px solid #30363d; }
+        .btn-zvuk-toggle.ukljucen { background: rgba(58, 192, 255, 0.15); color: #3ac0ff; border: 1px solid #3ac0ff; box-shadow: 0 0 10px rgba(58, 192, 255, 0.1); }
+
+        /* HARMONIKA SEKCIJE */
+        .harmonika-sekcija { background: #161a1d; border: 1px solid #222; border-radius: 12px; margin-bottom: 15px; overflow: hidden; display: flex; flex-direction: column; }
+        .harmonika-zaglavlje { padding: 16px; background: #1c2126; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 1rem; user-select: none; }
+        .harmonika-strelica { font-size: 0.8rem; color: #888; }
+        .harmonika-sekcija.otvorena .harmonika-strelica { transform: rotate(180deg); color: #3ac0ff; }
+        .notifikacija-krug { display: none; background: #dc3545; color: #fff; font-size: 0.7rem; padding: 2px 7px; border-radius: 10px; font-weight: bold; }
+
+        .harmonika-sadrzaj { display: none; padding: 15px; background: #111416; flex-direction: column; }
+        .harmonika-sekcija.otvorena .harmonika-sadrzaj { display: flex; }
+
+        /* OBAVEŠTENJA */
+        #grupne-poruke-kontejner { display: flex; flex-direction: column; gap: 10px; }
+        .poruka-kutija { background: #21262d; padding: 12px; border-radius: 8px; border: 1px solid #30363d; border-left: 4px solid #ff52b0; position: relative; }
+        .poruka-naslov { font-weight: bold; color: #ff52b0; margin-bottom: 4px; font-size: 0.95rem; padding-right: 30px; }
+        .poruka-tekst { font-size: 0.85rem; color: #ddd; line-height: 1.4; }
+        
+        /* ČET PROSTOR */
+        .chat-poruke-prostor { max-height: 240px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; padding-right: 5px; }
+        .balon-red { display: flex; width: 100%; align-items: center; gap: 8px; }
+        
+        .balon-red.admin { justify-content: flex-start; } /* Poruke kluba - levo */
+        .balon-red.clan { justify-content: flex-end; }   /* Tvoje poruke - desno */
+
+        .balon { max-width: 75%; padding: 10px 14px; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; position: relative; }
+        .balon.admin { background: #21262d; color: #fff; border-bottom-left-radius: 2px; border: 1px solid #30363d; }
+        .balon.clan { background: #3ac0ff; color: #000; border-bottom-right-radius: 2px; font-weight: 500; }
+        
+        /* BRISANJE PORUKA (X) */
+        .btn-obrisi-poruku { background: none; border: none; color: #555; font-size: 1.2rem; cursor: pointer; padding: 5px; transition: color 0.2s; user-select: none; z-index: 10; }
+        .btn-obrisi-poruku:hover { color: #dc3545; }
+        .poruka-kutija .btn-obrisi-poruku { position: absolute; top: 8px; right: 8px; }
+
+        .prazno-stanje { color: #555; font-style: italic; font-size: 0.9rem; text-align: center; padding: 15px 0; }
+        
+        .chat-forma { display: flex; gap: 8px; margin-bottom: 15px; background: #161a1d; padding: 5px; border-radius: 8px; }
+        .chat-input { flex: 1; padding: 12px; background: #21262d; border: 1px solid #30363d; color: #fff; border-radius: 6px; font-size: 0.95rem; }
+        .btn-posalji { background: #3ac0ff; color: #000; border: none; padding: 0 20px; border-radius: 6px; font-weight: bold; font-size: 0.95rem; cursor: pointer; }
+
+        /* TOAST OBAVEŠTENJA */
+        .toast { visibility: hidden; min-width: 200px; background-color: #21262d; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 9999; left: 50%; transform: translateX(-50%); bottom: 20px; font-size: 1rem; border: 1px solid #3ac0ff; box-shadow: 0 4px 15px rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.3s, bottom 0.3s; pointer-events: none; }
+        .toast.prikazi { visibility: visible; opacity: 1; bottom: 40px; }
+    </style>
+</head>
+<body>
+
+    <header>
+        <img src="totalfit_logo.png" alt="Total Fit" class="klub-logo">
+    </header>
+
+    <div class="prekidac-zvuka-kontejner">
+        <button class="btn-zvuk-toggle ukljucen" id="zvukPrekidac" onclick="promeniStanjeZvuka()">
+            <span>🔊 Zvuk obaveštenja: UKLJUČEN</span>
+        </button>
+    </div>
+
+    <div class="profil-kartica">
+        <div class="clan-ime" id="profil-ime">Učitavanje...</div>
+        <div class="clan-detalji">
+            <div>Članarina do: <span id="profil-vazi-do">-</span></div>
+            <div>Program: <span id="profil-program">-</span></div>
+        </div>
+    </div>
+
+    <div class="harmonika-sekcija" id="sekcija-broadcast">
+        <div class="harmonika-zaglavlje" onclick="toggleSekcija('broadcast')">
+            <span style="color: #ff52b0;">📢 Zvanična obaveštenja kluba</span>
+            <div>
+                <span class="notifikacija-krug" id="broadcastBadge" style="margin-right: 8px;">NOVO</span>
+                <span class="harmonika-strelica" id="strelica-broadcast">▼</span>
+            </div>
+        </div>
+        <div class="harmonika-sadrzaj">
+            <div id="grupne-poruke-kontejner">
+                <div class="prazno-stanje">Učitavanje klupskih obaveštenja...</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="harmonika-sekcija" id="sekcija-chat">
+        <div class="harmonika-zaglavlje" onclick="toggleSekcija('chat')">
+            <span style="color: #3ac0ff;">💬 Privatni čet sa klubom</span>
+            <div>
+                <span class="notifikacija-krug" id="chatBadge" style="margin-right: 8px;">NOVO</span>
+                <span class="harmonika-strelica" id="strelica-chat">▼</span>
+            </div>
+        </div>
+        <div class="harmonika-sadrzaj">
+            <form class="chat-forma" id="klijentChatForma">
+                <input type="text" class="chat-input" id="klijent_tekst" required placeholder="Napiši poruku klubu..." autocomplete="off">
+                <button type="submit" class="btn-posalji">Pošalji</button>
+            </form>
+            <div class="chat-poruke-prostor" id="porukeProstor"></div>
+        </div>
+    </div>
+
+    <script>
+        const MOCK_CLAN_ID = 1; 
+        let brojPorukaUPozadini = 0;
+        let brojGrupnihUPozadini = 0;
+        let podaciOmeni = null;
+        let otvorenaSekcija = null;
+        
+        let zvukUkljucen = localStorage.getItem('zvuk_ukljucen') !== 'false'; // Default je true
+        let klupskiAudioInbox = null;
+
+        let obrisaneGrupne = JSON.parse(localStorage.getItem('obrisane_grupne') || '[]');
+        let toastTimeout;
+
+        function prikaziObavestenje(poruka, jeGreska = false) {
+            let toast = document.getElementById("toast-obavestenje");
+            if (!toast) {
+                toast = document.createElement("div");
+                toast.id = "toast-obavestenje";
+                document.body.appendChild(toast);
+            }
+            toast.className = "toast";
+            toast.innerText = poruka;
+            toast.style.borderColor = jeGreska ? "#dc3545" : "#3ac0ff";
+            void toast.offsetWidth;
+            toast.classList.add("prikazi");
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => { toast.classList.remove("prikazi"); }, 3000);
+        }
+
+        function primeniStanjeZvuka(igrajTest = false) {
+            const dugme = document.getElementById('zvukPrekidac');
+            if (zvukUkljucen) {
+                dugme.className = "btn-zvuk-toggle ukljucen";
+                dugme.innerHTML = "<span>🔊 Zvuk obaveštenja: UKLJUČEN</span>";
+                if (igrajTest) {
+                    try {
+                        if (!klupskiAudioInbox) { klupskiAudioInbox = new Audio('ping.mp3'); }
+                        klupskiAudioInbox.play().then(() => { klupskiAudioInbox.pause(); klupskiAudioInbox.currentTime = 0; });
+                    } catch(err) {}
+                }
+            } else {
+                dugme.className = "btn-zvuk-toggle iskljucen";
+                dugme.innerHTML = "<span>🔇 Zvuk obaveštenja: ISKLJUČEN</span>";
+            }
+        }
+
+        function promeniStanjeZvuka() {
+            zvukUkljucen = !zvukUkljucen;
+            localStorage.setItem('zvuk_ukljucen', zvukUkljucen);
+            primeniStanjeZvuka(zvukUkljucen);
+        }
+        
+        primeniStanjeZvuka(); // Postavi inicijalni izgled dugmeta na osnovu memorije
+
+        function toggleSekcija(imeSekcije) {
+            const sekcijaBroadcast = document.getElementById('sekcija-broadcast');
+            const sekcijaChat = document.getElementById('sekcija-chat');
+            if (otvorenaSekcija === imeSekcije) {
+                sekcijaBroadcast.classList.remove('otvorena');
+                sekcijaChat.classList.remove('otvorena');
+                otvorenaSekcija = null;
+            } else {
+                sekcijaBroadcast.classList.remove('otvorena');
+                sekcijaChat.classList.remove('otvorena');
+                if (imeSekcije === 'broadcast') { sekcijaBroadcast.classList.add('otvorena'); document.getElementById('broadcastBadge').style.display = 'none'; } 
+                else { 
+                    sekcijaChat.classList.add('otvorena'); 
+                    document.getElementById('chatBadge').style.display = 'none';
+                    setTimeout(() => {
+                        const prostor = document.getElementById('porukeProstor');
+                        prostor.scrollTop = prostor.scrollHeight;
+                    }, 100);
+                }
+                otvorenaSekcija = imeSekcije;
+            }
+        }
+
+        function pustiZvuk() {
+            if (!zvukUkljucen) return; 
+            try { 
+                if (!klupskiAudioInbox) klupskiAudioInbox = new Audio('ping.mp3');
+                klupskiAudioInbox.currentTime = 0; 
+                klupskiAudioInbox.play(); 
+            } catch (e) {}
+        }
+
+        function sakrijGrupnuPoruku(id) {
+            obrisaneGrupne.push(id);
+            localStorage.setItem('obrisane_grupne', JSON.stringify(obrisaneGrupne));
+            osveziSveSaServera();
+            prikaziObavestenje("Obaveštenje uspešno uklonjeno.");
+        }
+
+        async function sakrijPrivatnuPoruku(id) {
+            try {
+                const res = await fetch(`/api/admin/poruke/individualna/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    prikaziObavestenje('Poruka trajno obrisana.');
+                    osveziSveSaServera();
+                }
+            } catch (e) { console.error(e); }
+        }
+
+        async function ucitajProfil() {
+            try {
+                const res = await fetch('/api/admin/clanovi?t=' + new Date().getTime()); const clanovi = await res.json();
+                podaciOmeni = clanovi.find(c => c.id === MOCK_CLAN_ID) || clanovi[0];
+                if (podaciOmeni) {
+                    document.getElementById('profil-ime').innerText = podaciOmeni.ime_prezime;
+                    document.getElementById('profil-vazi-do').innerText = podaciOmeni.clanarina_vrijedi_do || 'Nije postavljeno';
+                    let programi = []; if (podaciOmeni.fitness === 1) programi.push('Fitness'); if (podaciOmeni.bjj === 1) programi.push('BJJ');
+                    document.getElementById('profil-program').innerText = programi.join(' i ') || 'Nijedan';
+                    await osveziSveSaServera();
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        async function osveziSveSaServera() {
+            if (!podaciOmeni) return;
+            try {
+                // 1. Obrada grupnih obaveštenja
+                const resGrupne = await fetch('/api/admin/grupne-poruke-sve?t=' + new Date().getTime());
+                if (resGrupne.ok) {
+                    const sveGrupne = await resGrupne.json();
+                    const danasnjiDatum = new Date().toISOString().split('T')[0];
+                    const jeAktivan = podaciOmeni.clanarina_vrijedi_do >= danasnjiDatum;
+
+                    const filtriraneGrupne = sveGrupne.filter(p => {
+                        if (obrisaneGrupne.includes(p.id)) return false;
+                        if (p.filter === 'svi') return true;
+                        if (p.filter === 'aktivni' && jeAktivan) return true;
+                        if (p.filter === 'fitness' && podaciOmeni.fitness === 1 && jeAktivan) return true;
+                        if (p.filter === 'bjj' && podaciOmeni.bjj === 1 && jeAktivan) return true;
+                        return false;
+                    });
+
+                    if (brojGrupnihUPozadini > 0 && sveGrupne.length > brojGrupnihUPozadini) {
+                        if (otvorenaSekcija !== 'broadcast') document.getElementById('broadcastBadge').style.display = 'inline-block';
+                        pustiZvuk();
+                    }
+                    brojGrupnihUPozadini = sveGrupne.length;
+
+                    const kontejnerG = document.getElementById('grupne-poruke-kontejner');
+                    if (filtriraneGrupne.length === 0) {
+                        kontejnerG.innerHTML = `<div class="prazno-stanje">Nema novih obaveštenja 📅</div>`;
+                    } else {
+                        kontejnerG.innerHTML = filtriraneGrupne.slice().reverse().map(p => `
+                            <div class="poruka-kutija" id="grupna-id-${p.id}">
+                                <button class="btn-obrisi-poruku" onclick="sakrijGrupnuPoruku(${p.id})">&times;</button>
+                                <div class="poruka-naslov">📢 ${p.naslov}</div>
+                                <div class="poruka-tekst">${p.tekst}</div>
+                            </div>`).join('');
+                    }
+                }
+
+                // 2. Obrada privatnog četa (razdvajanje strana)
+                const resChat = await fetch(`/api/admin/poruke/chat/${MOCK_CLAN_ID}?t=` + new Date().getTime());
+                if (resChat.ok) {
+                    const svePoruke = await resChat.json();
+                    const vidljivePoruke = svePoruke;
+
+                    let novaPoruka = false;
+                    if (brojPorukaUPozadini > 0 && svePoruke.length > brojPorukaUPozadini) {
+                        if (otvorenaSekcija !== 'chat') document.getElementById('chatBadge').style.display = 'inline-block';
+                        pustiZvuk();
+                        novaPoruka = true;
+                    }
+                    let prvoUcitavanje = brojPorukaUPozadini === 0;
+                    brojPorukaUPozadini = svePoruke.length;
+
+                    const prostorC = document.getElementById('porukeProstor');
+                    if (vidljivePoruke.length === 0) {
+                        prostorC.innerHTML = `<div class="prazno-stanje">Nema poruka. Javi se klubu!</div>`;
+                    } else {
+                        const skrolujDole = prvoUcitavanje || novaPoruka || (prostorC.scrollTop + prostorC.clientHeight >= prostorC.scrollHeight - 50);
+
+                        prostorC.innerHTML = vidljivePoruke.map(p => { 
+                            const klasa = p.posiljalac === 'admin' ? 'admin' : 'clan'; 
+                            return `
+                                <div class="balon-red ${klasa}" id="privatna-id-${p.id}">
+                                    ${klasa === 'clan' ? `<button class="btn-obrisi-poruku" onclick="sakrijPrivatnuPoruku(${p.id})">&times;</button>` : ''}
+                                    <div class="balon ${klasa}">${p.tekst}</div>
+                                    ${klasa === 'admin' ? `<button class="btn-obrisi-poruku" onclick="sakrijPrivatnuPoruku(${p.id})">&times;</button>` : ''}
+                                </div>`; 
+                        }).join('');
+
+                        if (skrolujDole) { 
+                            setTimeout(() => { prostorC.scrollTop = prostorC.scrollHeight; }, 50); 
+                        }
+                    }
+                }
+            } catch (err) { console.error(err); }
+        }
+
+        document.getElementById('klijentChatForma').addEventListener('submit', async (e) => {
+            e.preventDefault(); const t = document.getElementById('klijent_tekst').value;
+            
+            // Šaljemo na ispravnu klijentsku rutu koja upisuje 'clan' u bazu
+            await fetch('/api/admin/poruke/individualna-klijent', { 
+                method: 'POST', 
+                headers: { 'Content-Type': 'application/json' }, 
+                body: JSON.stringify({ clan_id: MOCK_CLAN_ID, tekst: t }) 
+            });
+
+            document.getElementById('klijent_tekst').value = ''; 
+            await osveziSveSaServera(); 
+            const prostor = document.getElementById('porukeProstor');
+            prostor.scrollTop = prostor.scrollHeight;
+            prikaziObavestenje("Poruka klubu je uspešno poslata!");
+        });
+
+        ucitajProfil();
+        setInterval(osveziSveSaServera, 3000);
+    </script>
+</body>
+</html>

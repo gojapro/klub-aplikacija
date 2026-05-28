@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Total Fit - Početna</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
+        body { background: #0e1111; color: #fff; padding: 30px; display: flex; flex-direction: column; align-items: center; min-height: 100vh; }
+        
+        .kontejner-centar { width: 100%; max-width: 650px; text-align: center; }
+        
+        .klub-logo { height: 60px; width: auto; object-fit: contain; margin-bottom: 20px; }
+        h1 { font-size: 2rem; margin-bottom: 25px; color: #3ac0ff; font-weight: bold; }
+
+        /* STATISTIČKE KARTICE - KLIKABILNE */
+        .tabele-statistika { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-bottom: 25px; width: 100%; }
+        .stat-kartica-link { background: #161a1d; border: 1px solid #222; border-radius: 10px; padding: 15px; text-align: center; text-decoration: none; color: inherit; display: block; transition: all 0.2s ease; cursor: pointer; }
+        .stat-kartica-link:hover { border-color: #3ac0ff; background: #1c2126; transform: translateY(-2px); }
+        
+        .stat-kartica-link h3 { font-size: 0.75rem; color: #aaa; margin-bottom: 5px; text-transform: uppercase; }
+        .stat-broj { font-size: 1.6rem; font-weight: bold; }
+        
+        /* BOJE PO TVOJOJ ŽELJI */
+        .broj-ukupno { color: #ffffff; }
+        .broj-fitness { color: #ff52b0; }
+        .broj-bjj { color: #3ac0ff; }
+
+        /* NAVIGACIJA */
+        .meni-navigacija { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-bottom: 20px; }
+        .btn-link { background: #161a1d; border: 1px solid #222; color: #fff; text-decoration: none; padding: 20px; border-radius: 12px; font-weight: bold; font-size: 1.1rem; transition: all 0.2s; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+        .btn-link:hover { border-color: #3ac0ff; background: #1c2126; transform: translateY(-2px); }
+        .btn-link.bjj-stil:hover { border-color: #ffb703; }
+
+        /* BOXOVI ZA OPERATIVU */
+        .admin-sekcija-boks { background: #161a1d; border: 1px solid #222; border-radius: 12px; padding: 20px; text-align: left; width: 100%; margin-bottom: 20px; }
+        .boks-zaglavlje { display: flex; align-items: center; gap: 12px; margin-bottom: 15px; border-bottom: 1px solid #222; padding-bottom: 10px; }
+        .inbox-badge-novo { display: none; background: #dc3545; color: #fff; font-size: 0.75rem; padding: 3px 8px; border-radius: 10px; font-weight: bold; animation: blinkaOko 1.5s infinite; }
+        .inbox-poruke-lista { display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto; padding-right: 5px; }
+        .inbox-red-poruke { background: #21262d; border: 1px solid #30363d; padding: 12px 16px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s; }
+        .inbox-red-poruke:hover { background: #2d333b; border-color: #ff52b0; }
+        .inbox-red-poruke.neprocitana { border: 1px solid #3ac0ff; box-shadow: 0 0 8px rgba(58, 192, 255, 0.2); }
+        .inbox-red-tekst { font-size: 0.95rem; color: #ddd; }
+        .inbox-red-vreme { font-size: 0.75rem; color: #666; }
+
+        /* ROĐENDANI */
+        .rodjendani-lista { display: flex; flex-direction: column; gap: 8px; }
+        .rodjendan-red { background: #21262d; border: 1px solid #30363d; padding: 10px 14px; border-radius: 8px; display: flex; justify-content: space-between; align-items: center; }
+        .rodjendan-ime { font-size: 0.95rem; font-weight: bold; color: #fff; }
+        .rodjendan-datum { font-size: 0.85rem; color: #ff52b0; font-weight: bold; background: rgba(255, 82, 176, 0.1); padding: 2px 8px; border-radius: 4px; }
+
+        /* BROADCAST FORMA */
+        .forma-grupa { margin-bottom: 12px; }
+        .forma-grupa label { display: block; margin-bottom: 5px; color: #aaa; font-size: 0.85rem; }
+        .forma-input, .forma-select, .forma-textarea { width: 100%; padding: 10px; background: #21262d; border: 1px solid #30363d; color: #fff; border-radius: 6px; font-size: 0.95rem; }
+        .forma-textarea { resize: none; height: 70px; }
+        .btn-lansiraj { width: 100%; padding: 12px; background: #ff52b0; color: #fff; border: none; border-radius: 6px; font-weight: bold; font-size: 0.95rem; cursor: pointer; }
+        .btn-lansiraj:hover { background: #e0449b; }
+
+        @keyframes blinkaOko { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
+        /* MODAL I OSTALO OSTAVLJAMO ISTO... */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 100; justify-content: center; align-items: center; padding: 15px; }
+        .modal-sadrzaj { background: #161a1d; border: 1px solid #222; border-radius: 12px; width: 100%; max-width: 600px; display: flex; flex-direction: column; overflow: hidden; text-align: left; }
+        .modal-zaglavlje { padding: 20px; background: #1c2126; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #222; }
+        .zatvori-modal { font-size: 1.5rem; color: #aaa; cursor: pointer; background: none; border: none; }
+        .modal-telo { padding: 20px; }
+        .chat-kontejner { display: flex; flex-direction: column; height: 350px; }
+        .chat-poruke-prostor { flex: 1; overflow-y: auto; padding: 15px; background: #0e1111; display: flex; flex-direction: column; gap: 12px; border-radius: 6px; border: 1px solid #222; }
+        .chat-red-linija { display: flex; width: 100%; align-items: center; gap: 8px; }
+        .chat-red-linija.admin { justify-content: flex-end; }
+        .chat-red-linija.clan { justify-content: flex-start; }
+        .balon { max-width: 75%; padding: 10px 14px; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; }
+        .balon.admin { background: #3ac0ff; color: #000; }
+        .balon.clan { background: #21262d; color: #fff; border: 1px solid #30363d; }
+        .balon-vreme { font-size: 0.65rem; color: rgba(0,0,0,0.4); text-align: right; margin-top: 4px; }
+        .btn-admin-obrisi { background: none; border: none; color: #444; font-size: 1.1rem; cursor: pointer; }
+        .btn-admin-obrisi:hover { color: #dc3545; }
+        .chat-forma { display: flex; gap: 8px; margin-top: 12px; }
+        .chat-input { flex: 1; padding: 12px; background: #21262d; border: 1px solid #30363d; color: #fff; border-radius: 6px; }
+        .btn-chat-posalji { background: #3ac0ff; color: #000; border: none; padding: 0 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        
+        .btn-akcija { background: #21262d; border: 1px solid #333; color: #ccc; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; }
+        .btn-akcija:hover:not(:disabled) { background: #2d333b; color: #fff; border-color: #ff52b0; }
+        .btn-akcija:disabled { opacity: 0.5; cursor: not-allowed; border-color: #333; color: #888; background: #21262d; }
+
+        /* TOAST OBAVEŠTENJA */
+        .toast { visibility: hidden; min-width: 250px; background-color: #21262d; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 9999; left: 50%; transform: translateX(-50%); bottom: 20px; font-size: 1rem; border: 1px solid #3ac0ff; box-shadow: 0 4px 15px rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.3s, bottom 0.3s; pointer-events: none; }
+        .toast.prikazi { visibility: visible; opacity: 1; bottom: 40px; }
+    </style>
+</head>
+<body>
+
+    <div class="kontejner-centar">
+        <img src="totalfit_logo.png" alt="Total Fit" class="klub-logo">
+        <h1>Komandna Tabla</h1>
+
+        <div class="tabele-statistika">
+            <a href="admin-clanovi.html" class="stat-kartica-link">
+                <h3>Ukupno</h3>
+                <div class="stat-broj broj-ukupno" id="stat-ukupno">0</div>
+            </a>
+            <a href="admin-clanovi.html?filter=fitness" class="stat-kartica-link">
+                <h3>Fitness</h3>
+                <div class="stat-broj broj-fitness" id="stat-fitness">0</div>
+            </a>
+            <a href="admin-clanovi.html?filter=bjj" class="stat-kartica-link">
+                <h3>BJJ</h3>
+                <div class="stat-broj broj-bjj" id="stat-bjj">0</div>
+            </a>
+        </div>
+
+        <div class="meni-navigacija">
+            <a href="admin-clanovi.html?filter=fitness" class="btn-link">
+                <span style="color: #ff52b0;">🏃‍♂️ Fitness</span>
+            </a>
+            <a href="admin-clanovi.html?filter=bjj" class="btn-link bjj-stil">
+                <span style="color: #3ac0ff;">🥋 BJJ</span>
+            </a>
+        </div>
+
+        <div class="admin-sekcija-boks" style="cursor: pointer;" onclick="otvoriSvePorukeModal()">
+            <div class="boks-zaglavlje" style="border-bottom: none; margin-bottom: 5px; padding-bottom: 0;">
+                <h3 style="font-size: 1.1rem; color: #ff52b0;">📥 Zadnjih 5 poruka <span style="font-size: 0.8rem; color: #888; font-weight: normal;">(klikni za istoriju)</span></h3>
+                <span class="inbox-badge-novo" id="indexInboxNotifikacija" style="margin-left: auto;">NOVA PORUKA</span>
+            </div>
+            <div class="inbox-poruke-lista" id="indexInboxSadrzaj" style="margin-top: 10px;"></div>
+        </div>
+
+        <div class="admin-sekcija-boks" style="cursor: pointer;" onclick="otvoriSviRodjendaniModal()">
+            <div class="boks-zaglavlje" style="border-bottom: none; margin-bottom: 5px; padding-bottom: 0;">
+                <h3 style="font-size: 1.1rem; color: #ff52b0;">🎂 Sledećih 5 rođendana <span style="font-size: 0.8rem; color: #888; font-weight: normal;">(klikni za sve)</span></h3>
+            </div>
+            <div class="rodjendani-lista" id="indexRodjendaniSadrzaj" style="margin-top: 10px;"></div>
+        </div>
+
+        <div class="admin-sekcija-boks">
+            <div class="boks-zaglavlje">
+                <h3 style="font-size: 1.1rem; color: #ff52b0;">📢 Lansiraj klupsko obaveštenje</h3>
+            </div>
+            <form id="grupnaFormaIndex" onsubmit="posaljiGrupnoObavestenjeIndex(event)">
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px;">
+                    <div class="forma-grupa" style="margin: 0;">
+                        <label>Grupa</label>
+                        <select class="forma-select" id="grupni_filter">
+                            <option value="svi">📢 Svima</option>
+                            <option value="fitness">🏃‍♂️ Fitnes</option>
+                            <option value="bjj">🥋 BJJ</option>
+                        </select>
+                    </div>
+                    <div class="forma-grupa" style="margin: 0;">
+                        <label>Naslov</label>
+                        <input type="text" class="forma-input" id="grupni_naslov" required>
+                    </div>
+                </div>
+                <div class="forma-grupa">
+                    <label>Tekst</label>
+                    <textarea class="forma-textarea" id="grupni_tekst" required></textarea>
+                </div>
+                <button type="submit" class="btn-lansiraj">Pošalji</button>
+            </form>
+        </div>
+
+        <div class="admin-sekcija-boks" style="cursor: pointer;" onclick="otvoriSvaObavestenjaModal()">
+            <div class="boks-zaglavlje" style="border-bottom: none; margin-bottom: 5px; padding-bottom: 0;">
+                <h3 style="font-size: 1.1rem; color: #ff52b0;">📋 Zadnja 3 obaveštenja <span style="font-size: 0.8rem; color: #888; font-weight: normal;">(klikni za istoriju)</span></h3>
+            </div>
+            <div class="inbox-poruke-lista" id="indexZadnjaObavestenja" style="margin-top: 10px; max-height: none; overflow: visible;"></div>
+        </div>
+
+    </div>
+
+    <div class="modal" id="chatModal">
+        <div class="modal-sadrzaj">
+            <div class="modal-zaglavlje">
+                <div><h2 id="chatNaslovKlijenta">Razgovor</h2></div>
+                <button class="zatvori-modal" onclick="zatvoriModalCeta()">&times;</button>
+            </div>
+            <div class="modal-telo">
+                <div class="chat-kontejner">
+                    <input type="hidden" id="chat_clan_id">
+                    <div class="chat-poruke-prostor" id="chatPorukeProstor"></div>
+                    <form class="chat-forma" onsubmit="posaljiPorukuKlijentu(event)">
+                        <input type="text" class="chat-input" id="admin_chat_tekst" required placeholder="Odgovor..." autocomplete="off">
+                        <button type="submit" class="btn-chat-posalji">Pošalji</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="svaObavestenjaModal">
+        <div class="modal-sadrzaj">
+            <div class="modal-zaglavlje">
+                <div><h2 style="color: #3ac0ff;">Sva obaveštenja</h2></div>
+                <button class="zatvori-modal" onclick="zatvoriModalObavestenja()">&times;</button>
+            </div>
+            <div class="modal-telo">
+                <div id="listaSvihObavestenja" style="display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto; padding-right: 5px;"></div>
+                <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+                    <button class="btn-akcija" id="btnObavestenjaNazad" onclick="promeniStranuObavestenja(-1)">Prethodna</button>
+                    <span id="obavestenjaStranaInfo" style="color: #aaa; align-self: center;">Strana 1</span>
+                    <button class="btn-akcija" id="btnObavestenjaNapred" onclick="promeniStranuObavestenja(1)">Sledeća</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="sviRodjendaniModal">
+        <div class="modal-sadrzaj">
+            <div class="modal-zaglavlje">
+                <div><h2 style="color: #3ac0ff;">Svi predstojeći rođendani</h2></div>
+                <button class="zatvori-modal" onclick="zatvoriSviRodjendaniModal()">&times;</button>
+            </div>
+            <div class="modal-telo">
+                <div id="listaSvihRodjendana" style="display: flex; flex-direction: column; gap: 8px; max-height: 400px; overflow-y: auto; padding-right: 5px;"></div>
+                <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+                    <button class="btn-akcija" id="btnRodjendaniNazad" onclick="promeniStranuRodjendana(-1)">Prethodna</button>
+                    <span id="rodjendaniStranaInfo" style="color: #aaa; align-self: center;">Strana 1</span>
+                    <button class="btn-akcija" id="btnRodjendaniNapred" onclick="promeniStranuRodjendana(1)">Sledeća</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="svePorukeModal">
+        <div class="modal-sadrzaj">
+            <div class="modal-zaglavlje">
+                <div><h2 style="color: #3ac0ff;">Sve primljene poruke</h2></div>
+                <button class="zatvori-modal" onclick="zatvoriSvePorukeModal()">&times;</button>
+            </div>
+            <div class="modal-telo">
+                <div id="listaSvihPoruka" style="display: flex; flex-direction: column; gap: 10px; max-height: 400px; overflow-y: auto; padding-right: 5px;"></div>
+                <div style="display: flex; justify-content: space-between; margin-top: 15px;">
+                    <button class="btn-akcija" id="btnPorukeNazad" onclick="promeniStranuPoruka(-1)">Prethodna</button>
+                    <span id="porukeStranaInfo" style="color: #aaa; align-self: center;">Strana 1</span>
+                    <button class="btn-akcija" id="btnPorukeNapred" onclick="promeniStranuPoruka(1)">Sledeća</button>
+                </div>
+                <div style="text-align: center; margin-top: 15px; border-top: 1px solid #222; padding-top: 15px;">
+                    <button class="btn-akcija" style="width: 100%; border-color: #3ac0ff; color: #3ac0ff;" onclick="oznaciSveKaoProcitano()">✔️ Označi sve kao pročitano</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let sviClanoviKes = [];
+        let zadnjiBrojPoruka = parseInt(localStorage.getItem('admin_zadnji_broj_poruka')) || 0;
+        let imaNeprocitanePoruke = localStorage.getItem('admin_ima_neprocitane') === 'true';
+        
+        let svePorukeKes = [];
+        let trenutnaStranaPoruka = 1;
+        const porukePoStrani = 10;
+        let svaObavestenjaKes = [];
+        let trenutnaStranaObavestenja = 1;
+        const obavestenjaPoStrani = 10;
+        let sviRodjendaniKes = [];
+        let trenutnaStranaRodjendana = 1;
+        const rodjendaniPoStrani = 10;
+        let toastTimeout;
+
+        function prikaziObavestenje(poruka, jeGreska = false) {
+            let toast = document.getElementById("toast-obavestenje");
+            if (!toast) {
+                toast = document.createElement("div");
+                toast.id = "toast-obavestenje";
+                document.body.appendChild(toast);
+            }
+            toast.className = "toast";
+            toast.innerText = poruka;
+            toast.style.borderColor = jeGreska ? "#dc3545" : "#3ac0ff";
+            void toast.offsetWidth; 
+            toast.classList.add("prikazi");
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => { toast.classList.remove("prikazi"); }, 3000);
+        }
+
+        async function pokreniIndexPanel() {
+            try {
+                const resStat = await fetch('/api/admin/statistika'); const s = await resStat.json();
+                document.getElementById('stat-ukupno').innerText = s.ukupno;
+                document.getElementById('stat-fitness').innerText = s.fitness;
+                document.getElementById('stat-bjj').innerText = s.bjj;
+
+                const res = await fetch('/api/admin/clanovi');
+                sviClanoviKes = await res.json();
+                generisiRodjendanskiKalendar(sviClanoviKes);
+                await ucitajObavestenja();
+                await proveriCentralniInbox();
+                setInterval(proveriCentralniInbox, 3000);
+            } catch(e) { console.error(e); }
+        }
+
+        function generisiRodjendanskiKalendar(clanovi) {
+            const kontejner = document.getElementById('indexRodjendaniSadrzaj');
+            const danas = new Date();
+            const tekuciMesec = danas.getMonth() + 1;
+            const tekuciDan = danas.getDate();
+            let slavljenici = [];
+
+            clanovi.forEach(c => {
+                if (!c.datum_rodjenja) return;
+                const delovi = c.datum_rodjenja.split('-');
+                const m = parseInt(delovi[1]); const d = parseInt(delovi[2]);
+                let tezina = m * 100 + d;
+                let godineDodatak = 0;
+                if (tezina < (tekuciMesec * 100 + tekuciDan)) {
+                    tezina += 10000;
+                    godineDodatak = 1;
+                }
+                slavljenici.push({ ime: c.ime_prezime, pol: c.pol, dan: d, mesec: m, godina: parseInt(delovi[0]), godineDodatak: godineDodatak, sortTezina: tezina });
+            });
+            slavljenici.sort((a, b) => a.sortTezina - b.sortTezina);
+            sviRodjendaniKes = slavljenici;
+            
+            const top5 = slavljenici.slice(0, 5);
+            kontejner.innerHTML = top5.map(s => `
+                <div class="rodjendan-red">
+                    <div class="rodjendan-ime">${s.pol === 'Žensko' ? '🎀' : '🎂'} ${s.ime}</div>
+                    <div class="rodjendan-datum">${String(s.dan).padStart(2,'0')}.${String(s.mesec).padStart(2,'0')}.</div>
+                </div>`).join('');
+                
+            if (document.getElementById('sviRodjendaniModal') && document.getElementById('sviRodjendaniModal').style.display === 'flex') { prikaziStranuRodjendana(); }
+        }
+
+        async function proveriCentralniInbox() {
+            if (sviClanoviKes.length === 0) return;
+            try {
+                let svePoruke = [];
+                for (let clan of sviClanoviKes) {
+                    const res = await fetch(`/api/admin/poruke/chat/${clan.id}?t=` + new Date().getTime());
+                    if (res.ok) {
+                        const liste = await res.json();
+                        const klijentove = liste.filter(p => p.posiljalac === 'clan');
+                        klijentove.forEach(p => svePoruke.push({ id: p.id, clan_id: clan.id, ime: clan.ime_prezime, tekst: p.tekst, vreme: p.vreme, procitano: p.procitano }));
+                    }
+                }
+                svePoruke.sort((a, b) => new Date(b.vreme) - new Date(a.vreme));
+                const bedz = document.getElementById('indexInboxNotifikacija');
+                
+                if (svePoruke.length > zadnjiBrojPoruka) {
+                    imaNeprocitanePoruke = true;
+                    localStorage.setItem('admin_ima_neprocitane', 'true');
+                }
+                if (imaNeprocitanePoruke && svePoruke.length > 0) {
+                    bedz.style.display = 'inline-block';
+                } else {
+                    bedz.style.display = 'none';
+                }
+                
+                zadnjiBrojPoruka = svePoruke.length;
+                localStorage.setItem('admin_zadnji_broj_poruka', zadnjiBrojPoruka);
+                
+                svePorukeKes = svePoruke;
+                const zadnjih5 = svePoruke.slice(0, 5);
+                const listaOkvir = document.getElementById('indexInboxSadrzaj');
+                
+                if (zadnjih5.length === 0) {
+                    listaOkvir.innerHTML = '<div style="color:#aaa; font-size:0.9rem; padding: 10px;">Nema primljenih poruka.</div>';
+                } else {
+                    listaOkvir.innerHTML = zadnjih5.map(p => `
+                        <div class="inbox-red-poruke ${p.procitano === 0 ? 'neprocitana' : ''}" onclick="otvoriManiChat(event, ${p.clan_id}, '${p.ime}')">
+                            <div class="inbox-red-tekst"><strong>${p.ime}:</strong> "${p.tekst.length > 50 ? p.tekst.substring(0,50) + '...' : p.tekst}"</div>
+                            <div class="inbox-red-vreme">${formatDatumVreme(p.vreme)}</div>
+                        </div>`).join('');
+                }
+                if (document.getElementById('svePorukeModal') && document.getElementById('svePorukeModal').style.display === 'flex') { prikaziStranuPoruka(); }
+            } catch(e) {}
+        }
+
+        async function posaljiGrupnoObavestenjeIndex(e) {
+            e.preventDefault();
+            const podaci = { filter: document.getElementById('grupni_filter').value, naslov: document.getElementById('grupni_naslov').value, tekst: document.getElementById('grupni_tekst').value };
+            const res = await fetch('/api/admin/poruke/grupna', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(podaci) });
+            if(res.ok) { 
+                document.getElementById('grupnaFormaIndex').reset(); 
+                await ucitajObavestenja(); // Osvežava listu nakon slanja
+                prikaziObavestenje('Grupno obaveštenje uspešno poslato!'); 
+            }
+        }
+
+        function formatDatumVreme(datumStr) {
+            if (!datumStr) return '';
+            const cisto = datumStr.replace('T', ' ').substring(0, 16);
+            const delovi = cisto.split(' ');
+            if (delovi.length === 2) {
+                const d = delovi[0].split('-');
+                if (d.length === 3) return `${d[2]}.${d[1]}.${d[0]} ${delovi[1]}`;
+            }
+            return cisto;
+        }
+
+        async function ucitajObavestenja() {
+            try {
+                const res = await fetch('/api/admin/grupne-poruke-sve?t=' + new Date().getTime());
+                if(res.ok) {
+                    let obavestenja = await res.json();
+                    obavestenja.sort((a,b) => b.id - a.id); // Prikazuje najnovija na vrhu
+                    svaObavestenjaKes = obavestenja;
+                    
+                    const zadnja3 = obavestenja.slice(0, 3);
+                    const kontejner = document.getElementById('indexZadnjaObavestenja');
+                    
+                    if (zadnja3.length === 0) {
+                        kontejner.innerHTML = '<div style="color:#aaa; font-size:0.9rem; padding: 10px;">Nema poslatih obaveštenja.</div>';
+                    } else {
+                        kontejner.innerHTML = zadnja3.map(o => {
+                            let prviRed = o.tekst.split('\n')[0];
+                            if (prviRed.length > 60) prviRed = prviRed.substring(0, 60) + '...';
+                            else if (o.tekst.length > prviRed.length) prviRed += '...';
+                            return `
+                                <div class="inbox-red-poruke" style="cursor: inherit;">
+                                    <div style="display:flex; flex-direction:column; gap:4px; width: 100%;">
+                                        <div style="display:flex; justify-content: space-between; align-items: flex-start;">
+                                            <strong style="color:#3ac0ff;">${o.naslov}</strong>
+                                            <div style="display: flex; align-items: center; gap: 10px;">
+                                                <span style="font-size:0.75rem; color:#888;">${formatDatumVreme(o.vreme)}</span>
+                                                <button class="btn-admin-obrisi" title="Obriši obaveštenje" onclick="obrisiGrupnoObavestenje(event, ${o.id})">&times;</button>
+                                            </div>
+                                        </div>
+                                        <span class="inbox-red-tekst">${prviRed}</span>
+                                        <span style="font-size:0.75rem; color:#ff52b0; margin-top:2px;">Grupa: ${o.filter === 'svi' ? 'Svima' : (o.filter === 'fitness' ? 'Fitnes' : 'BJJ')}</span>
+                                    </div>
+                                </div>
+                            `;
+                        }).join('');
+                    }
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function otvoriSvaObavestenjaModal() { document.getElementById('svaObavestenjaModal').style.display = 'flex'; trenutnaStranaObavestenja = 1; prikaziStranuObavestenja(); }
+        function zatvoriModalObavestenja() { document.getElementById('svaObavestenjaModal').style.display = 'none'; }
+        function promeniStranuObavestenja(delta) { trenutnaStranaObavestenja += delta; prikaziStranuObavestenja(); }
+        
+        function prikaziStranuObavestenja() {
+            const start = (trenutnaStranaObavestenja - 1) * obavestenjaPoStrani;
+            const end = start + obavestenjaPoStrani;
+            const prikazana = svaObavestenjaKes.slice(start, end);
+            
+            const kontejner = document.getElementById('listaSvihObavestenja');
+            if (prikazana.length === 0) {
+                kontejner.innerHTML = '<div style="color:#aaa; font-size:0.9rem;">Nema poslatih obaveštenja.</div>';
+            } else {
+                kontejner.innerHTML = prikazana.map(o => `<div class="inbox-red-poruke" style="cursor: default;"><div style="display:flex; flex-direction:column; gap:4px; width: 100%;"><div style="display:flex; justify-content: space-between; align-items: flex-start;"><strong style="color:#3ac0ff;">${o.naslov}</strong><div style="display:flex; align-items:center; gap:10px;"><span style="font-size:0.75rem; color:#888;">${formatDatumVreme(o.vreme)}</span><button class="btn-admin-obrisi" title="Obriši obaveštenje" onclick="obrisiGrupnoObavestenje(event, ${o.id})">&times;</button></div></div><span class="inbox-red-tekst" style="white-space: pre-wrap;">${o.tekst}</span><span style="font-size:0.75rem; color:#ff52b0; margin-top:5px;">Filter: ${o.filter === 'svi' ? 'Svima' : (o.filter === 'fitness' ? 'Fitness' : 'BJJ')}</span></div></div>`).join('');
+            }
+            
+            document.getElementById('obavestenjaStranaInfo').innerText = `Strana ${trenutnaStranaObavestenja} / ${Math.ceil(svaObavestenjaKes.length / obavestenjaPoStrani) || 1}`;
+            document.getElementById('btnObavestenjaNazad').disabled = trenutnaStranaObavestenja === 1;
+            document.getElementById('btnObavestenjaNapred').disabled = end >= svaObavestenjaKes.length;
+        }
+
+        async function obrisiGrupnoObavestenje(event, id) {
+            if (event) event.stopPropagation();
+            try {
+                const res = await fetch(`/api/admin/poruke/grupna/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    prikaziObavestenje('Obaveštenje uspešno obrisano!');
+                    await ucitajObavestenja();
+                    if (document.getElementById('svaObavestenjaModal').style.display === 'flex') prikaziStranuObavestenja();
+                } else {
+                    prikaziObavestenje("Greška servera (restartuj server!): Kod " + res.status, true);
+                }
+            } catch(e) { 
+                prikaziObavestenje("Sistemska greška: " + e.message, true); 
+            }
+        }
+
+        function otvoriSvePorukeModal() { document.getElementById('svePorukeModal').style.display = 'flex'; trenutnaStranaPoruka = 1; prikaziStranuPoruka(); }
+        function zatvoriSvePorukeModal() { document.getElementById('svePorukeModal').style.display = 'none'; }
+        function promeniStranuPoruka(delta) { trenutnaStranaPoruka += delta; prikaziStranuPoruka(); }
+        
+        function prikaziStranuPoruka() {
+            const start = (trenutnaStranaPoruka - 1) * porukePoStrani;
+            const end = start + porukePoStrani;
+            const prikazana = svePorukeKes.slice(start, end);
+            
+            const kontejner = document.getElementById('listaSvihPoruka');
+            if (prikazana.length === 0) {
+                kontejner.innerHTML = '<div style="color:#aaa; font-size:0.9rem;">Nema primljenih poruka.</div>';
+            } else {
+                kontejner.innerHTML = prikazana.map(p => `<div class="inbox-red-poruke" onclick="otvoriManiChat(event, ${p.clan_id}, '${p.ime}')"><div style="display:flex; flex-direction:column; gap:4px; width: 100%;"><div style="display:flex; justify-content: space-between; align-items: flex-start;"><strong style="color:#3ac0ff;">${p.ime}</strong><span style="font-size:0.75rem; color:#888;">${formatDatumVreme(p.vreme)}</span></div><span class="inbox-red-tekst" style="white-space: pre-wrap;">${p.tekst}</span></div></div>`).join('');
+            }
+            
+            document.getElementById('porukeStranaInfo').innerText = `Strana ${trenutnaStranaPoruka} / ${Math.ceil(svePorukeKes.length / porukePoStrani) || 1}`;
+            document.getElementById('btnPorukeNazad').disabled = trenutnaStranaPoruka === 1;
+            document.getElementById('btnPorukeNapred').disabled = end >= svePorukeKes.length;
+        }
+
+        async function oznaciSveKaoProcitano() {
+            try {
+                const res = await fetch('/api/admin/poruke/procitano-sve', { method: 'PUT' });
+                if (res.ok) {
+                    svePorukeKes.forEach(p => p.procitano = 1);
+                    document.querySelectorAll('.neprocitana').forEach(el => el.classList.remove('neprocitana'));
+                    document.getElementById('indexInboxNotifikacija').style.display = 'none';
+                    imaNeprocitanePoruke = false;
+                    localStorage.setItem('admin_ima_neprocitane', 'false');
+                    prikaziStranuPoruka();
+                    proveriCentralniInbox(); // Osvežava mali inboks na početnoj strani
+                    prikaziObavestenje('Sve poruke su označene kao pročitane!');
+                }
+            } catch(e) { console.error(e); }
+        }
+
+        function otvoriManiChat(event, clanId, imePrezime) { 
+            if (event) event.stopPropagation();
+            zatvoriSvePorukeModal();
+            document.getElementById('chat_clan_id').value = clanId; 
+            document.getElementById('chatNaslovKlijenta').innerText = `Poruke: ${imePrezime}`; 
+            document.getElementById('chatModal').style.display = 'flex'; 
+            document.getElementById('indexInboxNotifikacija').style.display = 'none'; 
+            imaNeprocitanePoruke = false;
+            localStorage.setItem('admin_ima_neprocitane', 'false');
+            
+            fetch(`/api/admin/poruke/procitano/${clanId}`, { method: 'PUT' }).then(() => {
+                svePorukeKes.forEach(p => { if (p.clan_id === clanId) p.procitano = 1; });
+                document.querySelectorAll('.neprocitana').forEach(el => {
+                    if (el.getAttribute('onclick') && el.getAttribute('onclick').includes(`, ${clanId},`)) {
+                        el.classList.remove('neprocitana');
+                    }
+                });
+            });
+            osveziPorukeUCetu(); 
+        }
+        function zatvoriModalCeta() { document.getElementById('chatModal').style.display = 'none'; }
+        async function adminSakrijPoruku(id) { 
+            try {
+                const res = await fetch(`/api/admin/poruke/individualna/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    prikaziObavestenje('Poruka trajno obrisana.');
+                    osveziPorukeUCetu();
+                    proveriCentralniInbox(); // Osveži inboks listu
+                } else {
+                    prikaziObavestenje("Greška servera (restartuj server!): Kod " + res.status, true);
+                }
+            } catch (e) { 
+                prikaziObavestenje("Sistemska greška: " + e.message, true); 
+            }
+        }
+        async function osveziPorukeUCetu() {
+            const clanId = document.getElementById('chat_clan_id').value;
+            const res = await fetch(`/api/admin/poruke/chat/${clanId}?t=` + new Date().getTime()); const poruke = await res.json();
+            const prostor = document.getElementById('chatPorukeProstor');
+            prostor.innerHTML = poruke.map(p => {
+                const klasi = p.posiljalac === 'admin' ? 'admin' : 'clan';
+                return `<div class="chat-red-linija ${klasi}">${klasi === 'admin' ? `<button class="btn-admin-obrisi" onclick="adminSakrijPoruku(${p.id})">&times;</button>` : ''}<div class="balon ${klasi}">${p.tekst}</div>${klasi === 'clan' ? `<button class="btn-admin-obrisi" onclick="adminSakrijPoruku(${p.id})">&times;</button>` : ''}</div>`;
+            }).join('');
+            
+            // Automatski skroluj na dno da se vidi poslednja poruka
+            prostor.scrollTop = prostor.scrollHeight;
+        }
+        async function posaljiPorukuKlijentu(e) {
+            e.preventDefault(); const cid = document.getElementById('chat_clan_id').value; const txt = document.getElementById('admin_chat_tekst').value;
+            await fetch('/api/admin/poruke/individualna', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ clan_id: cid, tekst: txt }) });
+            document.getElementById('admin_chat_tekst').value = ''; osveziPorukeUCetu();
+        }
+        window.onload = pokreniIndexPanel;
+    </script>
+</body>
+</html>

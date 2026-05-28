@@ -244,8 +244,6 @@
 
     <script>
         let sviClanoviKes = [];
-        let zadnjiBrojPoruka = parseInt(localStorage.getItem('admin_zadnji_broj_poruka')) || 0;
-        let imaNeprocitanePoruke = localStorage.getItem('admin_ima_neprocitane') === 'true';
         
         let svePorukeKes = [];
         let trenutnaStranaPoruka = 1;
@@ -337,18 +335,13 @@
                 svePoruke.sort((a, b) => new Date(b.vreme) - new Date(a.vreme));
                 const bedz = document.getElementById('indexInboxNotifikacija');
                 
-                if (svePoruke.length > zadnjiBrojPoruka) {
-                    imaNeprocitanePoruke = true;
-                    localStorage.setItem('admin_ima_neprocitane', 'true');
-                }
-                if (imaNeprocitanePoruke && svePoruke.length > 0) {
+                const imaNeprocitane = svePoruke.some(p => p.procitano === 0);
+                if (imaNeprocitane) {
                     bedz.style.display = 'inline-block';
                 } else {
                     bedz.style.display = 'none';
                 }
                 
-                zadnjiBrojPoruka = svePoruke.length;
-                localStorage.setItem('admin_zadnji_broj_poruka', zadnjiBrojPoruka);
                 
                 svePorukeKes = svePoruke;
                 const zadnjih5 = svePoruke.slice(0, 5);
@@ -478,7 +471,7 @@
             if (prikazana.length === 0) {
                 kontejner.innerHTML = '<div style="color:#aaa; font-size:0.9rem;">Nema primljenih poruka.</div>';
             } else {
-                kontejner.innerHTML = prikazana.map(p => `<div class="inbox-red-poruke" onclick="otvoriManiChat(event, ${p.clan_id}, '${p.ime}')"><div style="display:flex; flex-direction:column; gap:4px; width: 100%;"><div style="display:flex; justify-content: space-between; align-items: flex-start;"><strong style="color:#3ac0ff;">${p.ime}</strong><span style="font-size:0.75rem; color:#888;">${formatDatumVreme(p.vreme)}</span></div><span class="inbox-red-tekst" style="white-space: pre-wrap;">${p.tekst}</span></div></div>`).join('');
+                kontejner.innerHTML = prikazana.map(p => `<div class="inbox-red-poruke" onclick="otvoriManiChat(event, ${p.clan_id}, '${p.ime}')"><div style="display:flex; flex-direction:column; gap:4px; width: 100%;"><div style="display:flex; justify-content: space-between; align-items: flex-start;"><strong style="color:#3ac0ff;">${p.ime}</strong><div style="display:flex; align-items:center; gap:10px;"><span style="font-size:0.75rem; color:#888;">${formatDatumVreme(p.vreme)}</span><button class="btn-admin-obrisi" title="Obriši poruku" onclick="obrisiPorukuIzInboxa(event, ${p.id})">&times;</button></div></div><span class="inbox-red-tekst" style="white-space: pre-wrap;">${p.tekst}</span></div></div>`).join('');
             }
             
             document.getElementById('porukeStranaInfo').innerText = `Strana ${trenutnaStranaPoruka} / ${Math.ceil(svePorukeKes.length / porukePoStrani) || 1}`;
@@ -493,10 +486,7 @@
                     svePorukeKes.forEach(p => p.procitano = 1);
                     document.querySelectorAll('.neprocitana').forEach(el => el.classList.remove('neprocitana'));
                     document.getElementById('indexInboxNotifikacija').style.display = 'none';
-                    imaNeprocitanePoruke = false;
-                    localStorage.setItem('admin_ima_neprocitane', 'false');
                     prikaziStranuPoruka();
-                    proveriCentralniInbox(); // Osvežava mali inboks na početnoj strani
                     prikaziObavestenje('Sve poruke su označene kao pročitane!');
                 }
             } catch(e) { console.error(e); }
@@ -508,12 +498,16 @@
             document.getElementById('chat_clan_id').value = clanId; 
             document.getElementById('chatNaslovKlijenta').innerText = `Poruke: ${imePrezime}`; 
             document.getElementById('chatModal').style.display = 'flex'; 
-            document.getElementById('indexInboxNotifikacija').style.display = 'none'; 
-            imaNeprocitanePoruke = false;
-            localStorage.setItem('admin_ima_neprocitane', 'false');
             
             fetch(`/api/admin/poruke/procitano/${clanId}`, { method: 'PUT' }).then(() => {
-                svePorukeKes.forEach(p => { if (p.clan_id === clanId) p.procitano = 1; });
+                let ostaloNeprocitanih = false;
+                svePorukeKes.forEach(p => { 
+                    if (p.clan_id === clanId) p.procitano = 1; 
+                    if (p.procitano === 0) ostaloNeprocitanih = true;
+                });
+                if (!ostaloNeprocitanih) {
+                    document.getElementById('indexInboxNotifikacija').style.display = 'none'; 
+                }
                 document.querySelectorAll('.neprocitana').forEach(el => {
                     if (el.getAttribute('onclick') && el.getAttribute('onclick').includes(`, ${clanId},`)) {
                         el.classList.remove('neprocitana');

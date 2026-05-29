@@ -4,40 +4,56 @@
     <meta charset="UTF-8">
     <title>Total Fit - Evidencija</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { background: #0e1111; color: #fff; padding: 20px; min-height: 100vh; }
-        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; padding-bottom: 15px; border-bottom: 1px solid #222; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: #121418; color: #F8F9FA; padding: 30px; min-height: 100vh; }
+        header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
         .klub-logo { height: 45px; width: auto; object-fit: contain; }
         
-        .btn-nazad { background: transparent; color: #fff; border: 1px solid #fff; padding: 8px 15px; border-radius: 6px; cursor: pointer; font-weight: bold; }
-        .btn-nazad:hover { background: #fff; color: #000; }
-        .btn-glavni { background: #3ac0ff; color: #000; border: none; padding: 10px 20px; border-radius: 6px; font-weight: bold; cursor: pointer; }
+        .btn-nazad { background: #22262F; color: #ADB5BD; border: 1px solid rgba(255,255,255,0.05); padding: 10px 18px; border-radius: 10px; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; }
+        .btn-nazad:hover { background: #2A2F39; color: #F8F9FA; transform: translateX(-2px); }
+        .btn-glavni { background: #4DABF7; color: #121418; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; }
+        .btn-glavni:hover { background: #339AF0; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(77, 171, 247, 0.2); }
         
-        .kontrole { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
-        .input-polje { padding: 10px; background: #161a1d; border: 1px solid #222; color: #fff; border-radius: 6px; }
+        .kontrole { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
+        .input-polje { padding: 12px 16px; background: #1A1D24; border: 1px solid rgba(255,255,255,0.05); color: #F8F9FA; border-radius: 10px; font-size: 0.95rem; outline: none; transition: all 0.2s ease; }
+        .input-polje:focus { border-color: #4DABF7; box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.15); }
         
-        .clanovi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px; }
-        .clan-kartica { background: #161a1d; border: 1px solid #222; padding: 15px; border-radius: 8px; }
+        .clanovi-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; }
+        .clan-kartica { background: #1A1D24; border: 1px solid rgba(255,255,255,0.02); padding: 20px; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); transition: transform 0.3s ease, box-shadow 0.3s ease; }
+        .clan-kartica:hover { transform: translateY(-4px); box-shadow: 0 8px 15px rgba(0,0,0,0.2); }
         
-        .clanovi-lista { display: block; width: 100%; overflow-x: auto; }
-        .tabela-clanovi { width: 100%; border-collapse: collapse; text-align: left; background: #161a1d; border-radius: 8px; overflow: hidden; }
-        .tabela-clanovi th, .tabela-clanovi td { padding: 12px 15px; border-bottom: 1px solid #222; }
-        .tabela-clanovi th { background: #1c2126; color: #3ac0ff; font-size: 0.9rem; text-transform: uppercase; }
+        .clanovi-lista { display: block; width: 100%; overflow-x: auto; background: #1A1D24; border-radius: 16px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); padding: 10px; }
+        .tabela-clanovi { width: 100%; border-collapse: collapse; text-align: left; }
+        .tabela-clanovi th, .tabela-clanovi td { padding: 16px 20px; border-bottom: 1px solid rgba(255,255,255,0.05); }
+        .tabela-clanovi th { background: #1A1D24; color: #868E96; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.5px; font-weight: 600; border-bottom: 2px solid rgba(255,255,255,0.05); }
         .tabela-clanovi tr:last-child td { border-bottom: none; }
-        .tabela-clanovi tr:hover { background: #21262d; }
+        .tabela-clanovi tr { transition: background 0.2s ease; }
+        .tabela-clanovi tr:hover { background: #22262F; }
 
-        .tag { padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; border: 1px solid #333; margin-right: 5px; font-weight: bold; }
-        .tag-fitness { color: #ff52b0; border-color: #ff52b0; }
-        .tag-bjj { color: #3ac0ff; border-color: #3ac0ff; }
+        .tag { padding: 4px 10px; border-radius: 20px; font-size: 0.75rem; font-weight: 700; display: inline-block; margin-right: 6px; margin-bottom: 6px; letter-spacing: 0.3px; }
+        .tag-fitness { background: rgba(255, 135, 135, 0.1); color: #FF8787; }
+        .tag-bjj { background: rgba(77, 171, 247, 0.1); color: #4DABF7; }
         
-        .btn-akcija { background: #21262d; border: 1px solid #333; color: #ccc; padding: 6px 12px; border-radius: 4px; cursor: pointer; font-size: 0.8rem; margin-top: 10px; }
+        .btn-akcija { background: #22262F; border: 1px solid rgba(255,255,255,0.05); color: #ADB5BD; padding: 8px 16px; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 500; transition: all 0.2s ease; margin-top: 15px; margin-right: 8px; display: inline-flex; align-items: center; justify-content: center; }
+        .btn-akcija:hover { background: #2A2F39; color: #F8F9FA; transform: translateY(-2px); }
+        .tabela-clanovi .btn-akcija { margin-top: 0; padding: 6px 12px; }
         
-        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.85); justify-content:center; align-items:center; z-index:1000; }
-        .modal-content { background: #161a1d; padding: 20px; border-radius: 10px; width: 350px; border: 1px solid #333; }
+        .modal { display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.6); backdrop-filter: blur(4px); justify-content:center; align-items:center; z-index:1000; padding: 20px; }
+        .modal-content { background: #1A1D24; padding: 30px; border-radius: 20px; width: 100%; max-width: 450px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); max-height: 90vh; overflow-y: auto; }
+        .modal-content h3 { font-size: 1.4rem; font-weight: 600; margin-bottom: 20px; color: #F8F9FA; }
+        .modal-content label { font-size: 0.85rem; color: #ADB5BD; font-weight: 500; margin-bottom: 6px; display: block; }
+        .modal-content .input-polje { background: #22262F; margin-bottom: 15px; border-radius: 10px; padding: 12px 15px; }
 
         /* TOAST OBAVEŠTENJA */
-        .toast { visibility: hidden; min-width: 250px; background-color: #21262d; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 9999; left: 50%; transform: translateX(-50%); bottom: 20px; font-size: 1rem; border: 1px solid #3ac0ff; box-shadow: 0 4px 15px rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.3s, bottom 0.3s; pointer-events: none; }
-        .toast.prikazi { visibility: visible; opacity: 1; bottom: 40px; }
+        .toast { visibility: hidden; min-width: 250px; background-color: #22262F; color: #F8F9FA; text-align: center; border-radius: 12px; padding: 16px 20px; position: fixed; z-index: 10000; left: 50%; transform: translateX(-50%) translateY(20px); bottom: 30px; font-size: 1rem; font-weight: 500; border-left: 4px solid #4DABF7; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); pointer-events: none; }
+        .toast.prikazi { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); }
+        
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 8px; height: 8px; }
+        ::-webkit-scrollbar-track { background: #121418; }
+        ::-webkit-scrollbar-thumb { background: #2A2F39; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #343A40; }
     </style>
 </head>
 <body>
@@ -45,7 +61,7 @@
     <header>
         <div style="display: flex; align-items: center; gap: 15px;">
             <button class="btn-nazad" onclick="window.location.href='index.html'">⬅️ Nazad</button>
-            <h1 style="color: #3ac0ff;">Evidencija</h1>
+            <h1 style="color: #4DABF7;">Evidencija</h1>
         </div>
         <button class="btn-glavni" onclick="otvoriModalClana()">➕ Dodaj Člana</button>
     </header>
@@ -71,9 +87,9 @@
         <div class="modal-content">
             <h3 id="chatNaslov" style="margin-bottom:10px;">Šalji poruku</h3>
             <input type="hidden" id="aktivan_clan_id">
-            <textarea id="porukaTekst" style="width:100%; height:80px; background:#000; color:#fff; border:1px solid #333; padding:10px;"></textarea>
+            <textarea id="porukaTekst" class="input-polje" style="width:100%; height:80px;"></textarea>
             <div style="margin-top:10px; display:flex; gap:10px;">
-                <button class="btn-akcija" onclick="posaljiPoruku()">Pošalji</button>
+                <button class="btn-glavni" onclick="posaljiPoruku()">Pošalji</button>
                 <button class="btn-akcija" onclick="zatvoriModal('chatModal')">Zatvori</button>
             </div>
         </div>
@@ -85,14 +101,12 @@
             <form id="dodajClanForma" onsubmit="sacuvajNovogClana(event)">
                 <input type="text" id="novi_ime" placeholder="Ime i prezime" class="input-polje" style="width:100%; margin-bottom:10px;" required>
                 <input type="text" id="novi_tel" placeholder="Telefon" class="input-polje" style="width:100%; margin-bottom:10px;">
-                <label style="font-size: 0.8rem; color: #888;">Datum rođenja</label>
+                <label>Datum rođenja</label>
                 <input type="date" id="novi_datum_rodjenja" class="input-polje" style="width:100%; margin-bottom:10px;">
                 <input type="text" id="novi_adresa" placeholder="Ulica i broj" class="input-polje" style="width:100%; margin-bottom:10px;">
-                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                    <input type="text" id="novi_grad" placeholder="Grad" class="input-polje" style="flex: 2; min-width: 0;">
-                    <input type="text" id="novi_postanski_broj" placeholder="Pošt. broj" class="input-polje" style="flex: 1; min-width: 0;">
-                </div>
-                <label style="font-size: 0.8rem; color: #888; display:block; margin-bottom:5px;">Država</label>
+                <input type="text" id="novi_grad" placeholder="Grad" class="input-polje" style="width:100%; margin-bottom:10px;">
+                <input type="text" id="novi_postanski_broj" placeholder="Pošt. broj" class="input-polje" style="width:100%; margin-bottom:10px;">
+                <label>Država</label>
                 <select id="novi_drzava" class="input-polje" style="width:100%; margin-bottom:10px;">
                     <option value="AT" selected>AT - Austrija</option>
                     <option value="RS">RS - Srbija</option>
@@ -147,8 +161,10 @@
                     <label><input type="checkbox" id="novi_fit"> Fitnes</label>
                     <label style="margin-left:15px;"><input type="checkbox" id="novi_bjj"> BJJ</label>
                 </div>
-                <button type="submit" class="btn-glavni">Sačuvaj</button>
-                <button type="button" class="btn-akcija" onclick="zatvoriModal('clanModal')">Odustani</button>
+                <div style="display:flex; gap:10px;">
+                    <button type="submit" class="btn-glavni">Sačuvaj</button>
+                    <button type="button" class="btn-akcija" onclick="zatvoriModal('clanModal')">Odustani</button>
+                </div>
             </form>
         </div>
     </div>
@@ -160,14 +176,12 @@
                 <input type="hidden" id="edit_id">
                 <input type="text" id="edit_ime" placeholder="Ime i prezime" class="input-polje" style="width:100%; margin-bottom:10px;" required>
                 <input type="text" id="edit_tel" placeholder="Telefon" class="input-polje" style="width:100%; margin-bottom:10px;">
-                <label style="font-size: 0.8rem; color: #888;">Datum rođenja</label>
+                <label>Datum rođenja</label>
                 <input type="date" id="edit_datum_rodjenja" class="input-polje" style="width:100%; margin-bottom:10px;">
                 <input type="text" id="edit_adresa" placeholder="Ulica i broj" class="input-polje" style="width:100%; margin-bottom:10px;">
-                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                    <input type="text" id="edit_grad" placeholder="Grad" class="input-polje" style="flex: 2; min-width: 0;">
-                    <input type="text" id="edit_postanski_broj" placeholder="Pošt. broj" class="input-polje" style="flex: 1; min-width: 0;">
-                </div>
-                <label style="font-size: 0.8rem; color: #888; display:block; margin-bottom:5px;">Država</label>
+                <input type="text" id="edit_grad" placeholder="Grad" class="input-polje" style="width:100%; margin-bottom:10px;">
+                <input type="text" id="edit_postanski_broj" placeholder="Pošt. broj" class="input-polje" style="width:100%; margin-bottom:10px;">
+                <label>Država</label>
                 <select id="edit_drzava" class="input-polje" style="width:100%; margin-bottom:10px;">
                     <option value="AT">AT - Austrija</option>
                     <option value="RS">RS - Srbija</option>
@@ -223,14 +237,16 @@
                     <label style="margin-left:15px;"><input type="checkbox" id="edit_bjj"> BJJ</label>
                 </div>
                 <div style="margin-bottom:15px;">
-                    <label style="font-size: 0.8rem; color: #888; display:block; margin-bottom:5px;">Status</label>
+                    <label>Status</label>
                     <select id="edit_status" class="input-polje" style="width:100%;">
                         <option value="Aktivan">Aktivan</option>
                         <option value="Neaktivan">Neaktivan</option>
                     </select>
                 </div>
-                <button type="submit" class="btn-glavni">Sačuvaj izmene</button>
-                <button type="button" class="btn-akcija" onclick="zatvoriModal('editClanModal')">Odustani</button>
+                <div style="display:flex; gap:10px;">
+                    <button type="submit" class="btn-glavni">Sačuvaj izmene</button>
+                    <button type="button" class="btn-akcija" onclick="zatvoriModal('editClanModal')">Odustani</button>
+                </div>
             </form>
         </div>
     </div>
@@ -249,11 +265,33 @@
             }
             toast.className = "toast";
             toast.innerText = poruka;
-            toast.style.borderColor = jeGreska ? "#dc3545" : "#3ac0ff";
+            toast.style.borderColor = jeGreska ? "#dc3545" : "#4DABF7";
             void toast.offsetWidth; // Pokreće animaciju iznova
             toast.classList.add("prikazi");
             clearTimeout(toastTimeout);
             toastTimeout = setTimeout(() => { toast.classList.remove("prikazi"); }, 3000);
+        }
+
+        function izracunajStarost(datumRodjenja) {
+            if (!datumRodjenja) return '';
+            const danas = new Date();
+            const rodjendan = new Date(datumRodjenja);
+            
+            let godine = danas.getFullYear() - rodjendan.getFullYear();
+            let meseci = danas.getMonth() - rodjendan.getMonth();
+            let dani = danas.getDate() - rodjendan.getDate();
+            
+            if (dani < 0) {
+                meseci--;
+                const prethodniMesec = new Date(danas.getFullYear(), danas.getMonth(), 0).getDate();
+                dani += prethodniMesec;
+            }
+            if (meseci < 0) {
+                godine--;
+                meseci += 12;
+            }
+            
+            return `${godine} g, ${meseci} m, ${dani} d`;
         }
 
         async function ucitaj() {
@@ -293,11 +331,11 @@
                 kontejner.className = 'clanovi-grid';
                 kontejner.innerHTML = lista.map(c => `
                     <div class="clan-kartica">
-                        <strong style="font-size: 1.1rem; color: #3ac0ff;">${c.ime_prezime}</strong>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top:8px;">📞 ${c.telefon || 'Nema tel.'}</div>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top:4px;">📧 ${c.email || 'Nema e-mail'}</div>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top:4px;">🏠 ${[c.adresa, c.postanski_broj, c.grad, c.drzava].filter(x => x && x.trim() !== '').join(', ') || 'Nema adrese'}</div>
-                        <div style="font-size:0.85rem; color:#aaa; margin-top:4px;">🎂 ${c.datum_rodjenja ? c.datum_rodjenja.split('-').reverse().join('.') : 'Nema datuma'}</div>
+                        <strong style="font-size: 1.15rem; color: #F8F9FA;">${c.ime_prezime}</strong>
+                        <div style="font-size:0.85rem; color:#ADB5BD; margin-top:10px;">📞 ${c.telefon || 'Nema tel.'}</div>
+                        <div style="font-size:0.85rem; color:#ADB5BD; margin-top:4px;">📧 ${c.email || 'Nema e-mail'}</div>
+                        <div style="font-size:0.85rem; color:#ADB5BD; margin-top:4px;">🏠 ${[c.adresa, c.postanski_broj, c.grad, c.drzava].filter(x => x && x.trim() !== '').join(', ') || 'Nema adrese'}</div>
+                        <div style="font-size:0.85rem; color:#ADB5BD; margin-top:4px;">🎂 ${c.datum_rodjenja ? c.datum_rodjenja.split('-').reverse().join('.') + ' <span style="color:#FF8787; font-weight:600;">(' + izracunajStarost(c.datum_rodjenja) + ')</span>' : 'Nema datuma'}</div>
                         <div style="margin-top:10px;">
                             ${c.fitness ? '<span class="tag tag-fitness">FITNES</span>' : ''}
                             ${c.bjj ? '<span class="tag tag-bjj">BJJ</span>' : ''}
@@ -313,11 +351,11 @@
                     </tr></thead><tbody>`;
                 html += lista.map(c => `
                     <tr>
-                        <td><strong style="color:#fff;">${c.ime_prezime}</strong></td>
-                        <td><span style="color:#aaa; font-size:0.85rem;">${c.telefon || '/'}</span></td>
-                        <td><span style="color:#aaa; font-size:0.85rem;">${c.email || '/'}</span></td>
-                        <td><span style="color:#aaa; font-size:0.85rem;">${[c.adresa, c.postanski_broj, c.grad, c.drzava].filter(x => x && x.trim() !== '').join(', ') || '/'}</span></td>
-                        <td><span style="color:#aaa; font-size:0.85rem;">${c.datum_rodjenja ? c.datum_rodjenja.split('-').reverse().join('.') : '/'}</span></td>
+                        <td><strong style="color:#F8F9FA;">${c.ime_prezime}</strong></td>
+                        <td><span style="color:#ADB5BD; font-size:0.85rem;">${c.telefon || '/'}</span></td>
+                        <td><span style="color:#ADB5BD; font-size:0.85rem;">${c.email || '/'}</span></td>
+                        <td><span style="color:#ADB5BD; font-size:0.85rem;">${[c.adresa, c.postanski_broj, c.grad, c.drzava].filter(x => x && x.trim() !== '').join(', ') || '/'}</span></td>
+                        <td><span style="color:#ADB5BD; font-size:0.85rem;">${c.datum_rodjenja ? c.datum_rodjenja.split('-').reverse().join('.') + '<br><span style="color:#FF8787; font-weight:600;">(' + izracunajStarost(c.datum_rodjenja) + ')</span>' : '/'}</span></td>
                         <td>
                             ${c.fitness ? '<span class="tag tag-fitness">FITNES</span>' : ''}
                             ${c.bjj ? '<span class="tag tag-bjj">BJJ</span>' : ''}

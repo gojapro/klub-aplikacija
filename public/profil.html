@@ -5,65 +5,80 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Total Fit - Moj Profil</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: sans-serif; }
-        body { background: #0e1111; color: #fff; padding: 15px; display: flex; flex-direction: column; min-height: 100vh; }
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: #121418; color: #F8F9FA; padding: 20px 15px; display: flex; flex-direction: column; min-height: 100vh; }
         
-        header { text-align: center; margin: 10px 0 15px 0; flex-shrink: 0; }
-        .klub-logo { height: 45px; width: auto; object-fit: contain; }
+        header { text-align: center; margin: 10px 0 25px 0; flex-shrink: 0; }
+        .klub-logo { height: 50px; width: auto; object-fit: contain; }
         
         /* KARTICA PROFILA */
-        .profil-kartica { background: #161a1d; border: 1px solid #222; border-radius: 12px; padding: 15px; text-align: center; border-top: 4px solid #ff52b0; margin-bottom: 15px; flex-shrink: 0; }
-        .clan-ime { font-size: 1.2rem; font-weight: bold; margin-bottom: 2px; }
-        .clan-detalji { margin-top: 10px; font-size: 0.85rem; color: #aaa; display: flex; justify-content: space-around; background: #21262d; padding: 10px; border-radius: 8px; }
-        .clan-detalji span { color: #fff; font-weight: bold; display: block; margin-top: 2px; }
+        .profil-kartica { background: #1A1D24; border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 20px; flex-shrink: 0; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
+        .profil-kartica::before { content: ""; position: absolute; top: 0; left: 0; right: 0; height: 4px; background: linear-gradient(90deg, #4DABF7, #FF8787); }
+        .clan-ime { font-size: 1.4rem; font-weight: 700; margin-bottom: 5px; color: #F8F9FA; letter-spacing: -0.5px; }
+        .clan-detalji { margin-top: 15px; font-size: 0.9rem; color: #ADB5BD; display: flex; justify-content: space-around; background: #22262F; padding: 15px 10px; border-radius: 12px; }
+        .clan-detalji span { color: #F8F9FA; font-weight: 700; display: block; margin-top: 4px; font-size: 1rem; }
 
         /* PREKIDAČ ZVUKA */
-        .prekidac-zvuka-kontejner { margin-bottom: 15px; flex-shrink: 0; }
-        .btn-zvuk-toggle { width: 100%; padding: 12px; border-radius: 8px; font-weight: bold; font-size: 0.9rem; text-align: center; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.2s ease; }
-        .btn-zvuk-toggle.iskljucen { background: #21262d; color: #888; border: 1px solid #30363d; }
-        .btn-zvuk-toggle.ukljucen { background: rgba(58, 192, 255, 0.15); color: #3ac0ff; border: 1px solid #3ac0ff; box-shadow: 0 0 10px rgba(58, 192, 255, 0.1); }
+        .prekidac-zvuka-kontejner { margin-bottom: 20px; flex-shrink: 0; }
+        .btn-zvuk-toggle { width: 100%; padding: 14px; border-radius: 12px; font-weight: 600; font-size: 0.95rem; text-align: center; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 10px; transition: all 0.3s ease; border: none; }
+        .btn-zvuk-toggle.iskljucen { background: #22262F; color: #868E96; }
+        .btn-zvuk-toggle.ukljucen { background: rgba(77, 171, 247, 0.1); color: #4DABF7; box-shadow: 0 0 0 1px rgba(77, 171, 247, 0.2) inset; }
 
         /* HARMONIKA SEKCIJE */
-        .harmonika-sekcija { background: #161a1d; border: 1px solid #222; border-radius: 12px; margin-bottom: 15px; overflow: hidden; display: flex; flex-direction: column; }
-        .harmonika-zaglavlje { padding: 16px; background: #1c2126; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: bold; font-size: 1rem; user-select: none; }
-        .harmonika-strelica { font-size: 0.8rem; color: #888; }
-        .harmonika-sekcija.otvorena .harmonika-strelica { transform: rotate(180deg); color: #3ac0ff; }
-        .notifikacija-krug { display: none; background: #dc3545; color: #fff; font-size: 0.7rem; padding: 2px 7px; border-radius: 10px; font-weight: bold; }
+        .harmonika-sekcija { background: #1A1D24; border-radius: 16px; margin-bottom: 15px; overflow: hidden; display: flex; flex-direction: column; box-shadow: 0 4px 6px rgba(0,0,0,0.05); transition: all 0.3s ease; border: 1px solid rgba(255,255,255,0.02); }
+        .harmonika-sekcija:hover { box-shadow: 0 6px 12px rgba(0,0,0,0.1); }
+        .harmonika-zaglavlje { padding: 18px 20px; background: #1A1D24; cursor: pointer; display: flex; justify-content: space-between; align-items: center; font-weight: 600; font-size: 1.05rem; user-select: none; transition: background 0.2s ease; }
+        .harmonika-zaglavlje:hover { background: #22262F; }
+        .harmonika-strelica { font-size: 0.8rem; color: #868E96; transition: transform 0.3s ease; }
+        .harmonika-sekcija.otvorena .harmonika-strelica { transform: rotate(180deg); color: #F8F9FA; }
+        .notifikacija-krug { display: none; background: #FF8787; color: #121418; font-size: 0.75rem; padding: 3px 8px; border-radius: 12px; font-weight: 700; animation: blinkaOko 2s infinite; }
 
-        .harmonika-sadrzaj { display: none; padding: 15px; background: #111416; flex-direction: column; }
+        .harmonika-sadrzaj { display: none; padding: 0 20px 20px 20px; background: #1A1D24; flex-direction: column; }
         .harmonika-sekcija.otvorena .harmonika-sadrzaj { display: flex; }
 
         /* OBAVEŠTENJA */
-        #grupne-poruke-kontejner { display: flex; flex-direction: column; gap: 10px; }
-        .poruka-kutija { background: #21262d; padding: 12px; border-radius: 8px; border: 1px solid #30363d; border-left: 4px solid #ff52b0; position: relative; }
-        .poruka-naslov { font-weight: bold; color: #ff52b0; margin-bottom: 4px; font-size: 0.95rem; padding-right: 30px; }
-        .poruka-tekst { font-size: 0.85rem; color: #ddd; line-height: 1.4; }
+        #grupne-poruke-kontejner { display: flex; flex-direction: column; gap: 12px; margin-top: 10px; }
+        .poruka-kutija { background: #22262F; padding: 16px; border-radius: 12px; position: relative; border-left: 4px solid #FF8787; transition: transform 0.2s ease; }
+        .poruka-kutija:hover { transform: translateX(2px); }
+        .poruka-naslov { font-weight: 700; color: #F8F9FA; margin-bottom: 6px; font-size: 1rem; padding-right: 30px; letter-spacing: -0.3px; }
+        .poruka-tekst { font-size: 0.9rem; color: #ADB5BD; line-height: 1.5; white-space: pre-wrap; }
         
         /* ČET PROSTOR */
-        .chat-poruke-prostor { max-height: 240px; overflow-y: auto; display: flex; flex-direction: column; gap: 12px; margin-bottom: 15px; padding-right: 5px; }
+        .chat-poruke-prostor { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; padding-right: 5px; margin-top: 10px; }
         .balon-red { display: flex; width: 100%; align-items: center; gap: 8px; }
         
         .balon-red.admin { justify-content: flex-start; } /* Poruke kluba - levo */
         .balon-red.clan { justify-content: flex-end; }   /* Tvoje poruke - desno */
 
-        .balon { max-width: 75%; padding: 10px 14px; border-radius: 12px; font-size: 0.9rem; line-height: 1.4; position: relative; }
-        .balon.admin { background: #21262d; color: #fff; border-bottom-left-radius: 2px; border: 1px solid #30363d; }
-        .balon.clan { background: #3ac0ff; color: #000; border-bottom-right-radius: 2px; font-weight: 500; }
+        .balon { max-width: 80%; padding: 12px 16px; border-radius: 16px; font-size: 0.95rem; line-height: 1.5; position: relative; word-wrap: break-word; }
+        .balon.admin { background: #2A2F39; color: #F8F9FA; border-bottom-left-radius: 4px; }
+        .balon.clan { background: #4DABF7; color: #121418; border-bottom-right-radius: 4px; font-weight: 500; }
         
         /* BRISANJE PORUKA (X) */
-        .btn-obrisi-poruku { background: none; border: none; color: #555; font-size: 1.2rem; cursor: pointer; padding: 5px; transition: color 0.2s; user-select: none; z-index: 10; }
-        .btn-obrisi-poruku:hover { color: #dc3545; }
-        .poruka-kutija .btn-obrisi-poruku { position: absolute; top: 8px; right: 8px; }
+        .btn-obrisi-poruku { background: none; border: none; color: #868E96; font-size: 1.2rem; cursor: pointer; padding: 5px; transition: color 0.2s ease; user-select: none; z-index: 10; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; border-radius: 50%; }
+        .btn-obrisi-poruku:hover { color: #FF8787; background: rgba(255, 135, 135, 0.1); }
+        .poruka-kutija .btn-obrisi-poruku { position: absolute; top: 12px; right: 12px; }
 
-        .prazno-stanje { color: #555; font-style: italic; font-size: 0.9rem; text-align: center; padding: 15px 0; }
+        .prazno-stanje { color: #868E96; font-size: 0.95rem; text-align: center; padding: 20px 0; font-weight: 500; }
         
-        .chat-forma { display: flex; gap: 8px; margin-bottom: 15px; background: #161a1d; padding: 5px; border-radius: 8px; }
-        .chat-input { flex: 1; padding: 12px; background: #21262d; border: 1px solid #30363d; color: #fff; border-radius: 6px; font-size: 0.95rem; }
-        .btn-posalji { background: #3ac0ff; color: #000; border: none; padding: 0 20px; border-radius: 6px; font-weight: bold; font-size: 0.95rem; cursor: pointer; }
+        .chat-forma { display: flex; gap: 10px; margin-bottom: 5px; background: transparent; padding: 0; }
+        .chat-input { flex: 1; padding: 14px 18px; background: #22262F; border: 1px solid rgba(255,255,255,0.05); color: #F8F9FA; border-radius: 12px; font-size: 0.95rem; transition: all 0.2s ease; }
+        .chat-input:focus { outline: none; border-color: #4DABF7; box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.15); }
+        .btn-posalji { background: #4DABF7; color: #121418; border: none; padding: 0 20px; border-radius: 12px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s ease; }
+        .btn-posalji:hover { background: #339AF0; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(77, 171, 247, 0.2); }
+
+        @keyframes blinkaOko { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
 
         /* TOAST OBAVEŠTENJA */
-        .toast { visibility: hidden; min-width: 200px; background-color: #21262d; color: #fff; text-align: center; border-radius: 8px; padding: 16px; position: fixed; z-index: 9999; left: 50%; transform: translateX(-50%); bottom: 20px; font-size: 1rem; border: 1px solid #3ac0ff; box-shadow: 0 4px 15px rgba(0,0,0,0.5); opacity: 0; transition: opacity 0.3s, bottom 0.3s; pointer-events: none; }
-        .toast.prikazi { visibility: visible; opacity: 1; bottom: 40px; }
+        .toast { visibility: hidden; min-width: 250px; background-color: #22262F; color: #F8F9FA; text-align: center; border-radius: 12px; padding: 16px 20px; position: fixed; z-index: 10000; left: 50%; transform: translateX(-50%) translateY(20px); bottom: 30px; font-size: 1rem; font-weight: 500; border-left: 4px solid #4DABF7; box-shadow: 0 10px 25px rgba(0,0,0,0.2); opacity: 0; transition: all 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55); pointer-events: none; }
+        .toast.prikazi { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); }
+
+        /* SCROLLBAR */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #2A2F39; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #343A40; }
     </style>
 </head>
 <body>
@@ -88,7 +103,7 @@
 
     <div class="harmonika-sekcija" id="sekcija-broadcast">
         <div class="harmonika-zaglavlje" onclick="toggleSekcija('broadcast')">
-            <span style="color: #ff52b0;">📢 Zvanična obaveštenja kluba</span>
+            <span style="color: #FF8787;">📢 Zvanična obaveštenja kluba</span>
             <div>
                 <span class="notifikacija-krug" id="broadcastBadge" style="margin-right: 8px;">NOVO</span>
                 <span class="harmonika-strelica" id="strelica-broadcast">▼</span>
@@ -103,7 +118,7 @@
 
     <div class="harmonika-sekcija" id="sekcija-chat">
         <div class="harmonika-zaglavlje" onclick="toggleSekcija('chat')">
-            <span style="color: #3ac0ff;">💬 Privatni čet sa klubom</span>
+            <span style="color: #4DABF7;">💬 Privatni čet sa klubom</span>
             <div>
                 <span class="notifikacija-krug" id="chatBadge" style="margin-right: 8px;">NOVO</span>
                 <span class="harmonika-strelica" id="strelica-chat">▼</span>
@@ -140,7 +155,7 @@
             }
             toast.className = "toast";
             toast.innerText = poruka;
-            toast.style.borderColor = jeGreska ? "#dc3545" : "#3ac0ff";
+            toast.style.borderColor = jeGreska ? "#dc3545" : "#4DABF7";
             void toast.offsetWidth;
             toast.classList.add("prikazi");
             clearTimeout(toastTimeout);

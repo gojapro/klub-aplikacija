@@ -11,6 +11,9 @@
         
         header { text-align: center; margin: 10px 0 25px 0; flex-shrink: 0; }
         .klub-logo { height: 50px; width: auto; object-fit: contain; }
+
+        .btn-odjava { background: #2A2F39; color: #ADB5BD; border: none; padding: 12px 24px; border-radius: 12px; cursor: pointer; font-weight: 600; font-size: 0.95rem; transition: all 0.2s ease; }
+        .btn-odjava:hover { background: #FF8787; color: #1A1D24; transform: translateY(-2px); }
         
         /* KARTICA PROFILA */
         .profil-kartica { background: #1A1D24; border-radius: 16px; padding: 20px; text-align: center; margin-bottom: 20px; flex-shrink: 0; box-shadow: 0 4px 15px rgba(0,0,0,0.1); position: relative; overflow: hidden; }
@@ -133,8 +136,18 @@
         </div>
     </div>
 
+    <div style="text-align: center; margin-top: 20px; flex-shrink: 0;">
+        <button class="btn-odjava" id="logoutBtn">Odjavi se</button>
+    </div>
+
     <script>
-        const MOCK_CLAN_ID = 1; 
+        let clanId = localStorage.getItem('clan_id');
+        if (!clanId) {
+            window.location.href = 'login.html';
+        } else {
+            clanId = parseInt(clanId, 10);
+        }
+
         let brojPorukaUPozadini = 0;
         let brojGrupnihUPozadini = 0;
         let podaciOmeni = null;
@@ -238,8 +251,9 @@
 
         async function ucitajProfil() {
             try {
-                const res = await fetch('/api/admin/clanovi?t=' + new Date().getTime()); const clanovi = await res.json();
-                podaciOmeni = clanovi.find(c => c.id === MOCK_CLAN_ID) || clanovi[0];
+                const res = await fetch('/api/admin/clanovi?t=' + new Date().getTime());
+                const clanovi = await res.json();
+                podaciOmeni = clanovi.find(c => c.id === clanId);
                 if (podaciOmeni) {
                     document.getElementById('profil-ime').innerText = podaciOmeni.ime_prezime;
                     document.getElementById('profil-vazi-do').innerText = podaciOmeni.clanarina_vrijedi_do || 'Nije postavljeno';
@@ -289,7 +303,7 @@
                 }
 
                 // 2. Obrada privatnog četa (razdvajanje strana)
-                const resChat = await fetch(`/api/admin/poruke/chat/${MOCK_CLAN_ID}?t=` + new Date().getTime());
+                const resChat = await fetch(`/api/admin/poruke/chat/${clanId}?t=` + new Date().getTime());
                 if (resChat.ok) {
                     const svePoruke = await resChat.json();
                     const vidljivePoruke = svePoruke;
@@ -334,7 +348,7 @@
             await fetch('/api/admin/poruke/individualna-klijent', { 
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json' }, 
-                body: JSON.stringify({ clan_id: MOCK_CLAN_ID, tekst: t }) 
+                body: JSON.stringify({ clan_id: clanId, tekst: t }) 
             });
 
             document.getElementById('klijent_tekst').value = ''; 
@@ -342,6 +356,12 @@
             const prostor = document.getElementById('porukeProstor');
             prostor.scrollTop = prostor.scrollHeight;
             prikaziObavestenje("Poruka klubu je uspešno poslata!");
+        });
+
+        document.getElementById('logoutBtn').addEventListener('click', () => {
+            localStorage.removeItem('clan_id');
+            localStorage.removeItem('clan_ime');
+            window.location.href = 'login.html';
         });
 
         ucitajProfil();

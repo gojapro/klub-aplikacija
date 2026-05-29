@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="sr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Total Fit - Prijava</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
+        body { background: #121418; color: #F8F9FA; display: flex; justify-content: center; align-items: center; min-height: 100vh; padding: 20px; }
+        .login-kontejner { background: #1A1D24; padding: 40px 30px; border-radius: 20px; width: 100%; max-width: 400px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.2); border: 1px solid rgba(255,255,255,0.05); }
+        .klub-logo { height: 50px; margin-bottom: 25px; }
+        h2 { font-size: 1.5rem; font-weight: 700; margin-bottom: 25px; color: #F8F9FA; }
+        .input-polje { width: 100%; padding: 14px 18px; background: #22262F; border: 1px solid rgba(255,255,255,0.05); color: #F8F9FA; border-radius: 12px; font-size: 1rem; margin-bottom: 15px; transition: all 0.2s ease; }
+        .input-polje:focus { outline: none; border-color: #4DABF7; box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.15); }
+        .btn-prijava { width: 100%; padding: 15px; background: #4DABF7; color: #121418; border: none; border-radius: 12px; font-weight: 700; font-size: 1rem; cursor: pointer; transition: all 0.2s ease; }
+        .btn-prijava:hover { background: #339AF0; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(77, 171, 247, 0.2); }
+        .error-poruka { color: #FF8787; background: rgba(255, 135, 135, 0.1); padding: 10px; border-radius: 8px; margin-top: 20px; display: none; font-weight: 500; }
+        .info-poruka { font-size: 0.85rem; color: #868E96; margin-top: 20px; line-height: 1.5; }
+    </style>
+</head>
+<body>
+    <div class="login-kontejner">
+        <img src="totalfit_logo.png" alt="Total Fit" class="klub-logo">
+        <h2>Prijava za članove</h2>
+        <form id="loginForma">
+            <input type="text" id="korisnicko_ime" class="input-polje" placeholder="Korisničko ime" required autocomplete="username">
+            <input type="password" id="lozinka" class="input-polje" placeholder="Lozinka" required autocomplete="current-password">
+            <button type="submit" class="btn-prijava">Prijavi se</button>
+        </form>
+        <div class="error-poruka" id="errorPoruka"></div>
+        <div class="info-poruka">
+            Vaše korisničko ime je obično u formatu "ime.prezime" (sve malim slovima, bez kvačica). Za lozinku se obratite treneru.
+        </div>
+    </div>
+
+    <script>
+        // Proveravamo da li je korisnik već ulogovan
+        if (localStorage.getItem('clan_id')) {
+            window.location.href = 'profil.html';
+        }
+
+        document.getElementById('loginForma').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const korisnicko_ime = document.getElementById('korisnicko_ime').value;
+            const lozinka = document.getElementById('lozinka').value;
+            const errorPorukaDiv = document.getElementById('errorPoruka');
+            errorPorukaDiv.style.display = 'none';
+
+            try {
+                const res = await fetch('/api/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ korisnicko_ime, lozinka })
+                });
+
+                if (res.ok) {
+                    const data = await res.json();
+                    // Čuvamo ID člana u lokalnoj memoriji
+                    localStorage.setItem('clan_id', data.id);
+                    localStorage.setItem('clan_ime', data.ime_prezime);
+                    // Preusmeravamo na profilnu stranicu
+                    window.location.href = 'profil.html';
+                } else {
+                    const errData = await res.json();
+                    errorPorukaDiv.innerText = errData.error || 'Došlo je do greške.';
+                    errorPorukaDiv.style.display = 'block';
+                }
+            } catch (err) {
+                errorPorukaDiv.innerText = 'Greška u komunikaciji sa serverom.';
+                errorPorukaDiv.style.display = 'block';
+            }
+        });
+    </script>
+</body>
+</html>

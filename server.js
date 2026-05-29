@@ -66,21 +66,30 @@ db.serialize(() => {
 db.run(`ALTER TABLE clanovi ADD COLUMN fitness INTEGER DEFAULT 0`, () => {});
 db.run(`ALTER TABLE clanovi ADD COLUMN bjj INTEGER DEFAULT 0`, () => {});
 db.run(`ALTER TABLE clanovi ADD COLUMN pol TEXT`, () => {});
-db.run(`ALTER TABLE clanovi ADD COLUMN korisnicko_ime TEXT UNIQUE`, () => {});
+db.run(`ALTER TABLE clanovi ADD COLUMN korisnicko_ime TEXT`, () => {});
 db.run(`ALTER TABLE clanovi ADD COLUMN lozinka TEXT`, () => {});
 db.run(`ALTER TABLE clanovi ADD COLUMN adresa TEXT`, () => {});
 db.run(`ALTER TABLE clanovi ADD COLUMN grad TEXT`, () => {});
 db.run(`ALTER TABLE clanovi ADD COLUMN postanski_broj TEXT`, () => {});
-db.run(`ALTER TABLE clanovi ADD COLUMN drzava TEXT DEFAULT 'AT'`, () => {});
+db.run(`ALTER TABLE clanovi ADD COLUMN drzava TEXT DEFAULT 'AT'`, () => {
+    // Automatski dodeli/popravi korisnička imena i lozinke svim postojećim članovima
+    db.each(`SELECT id, ime_prezime, korisnicko_ime FROM clanovi`, (err, row) => {
+        if (row) {
+            const kIme = kreirajKorisnickoIme(row.ime_prezime);
+            if (!row.korisnicko_ime || row.korisnicko_ime !== kIme) {
+                db.run(`UPDATE clanovi SET korisnicko_ime = ?, lozinka = 'totalfit123' WHERE id = ?`, [kIme, row.id]);
+            }
+        }
+    });
+});
 
 function kreirajKorisnickoIme(imePrezime) {
     return imePrezime.toLowerCase()
         .trim()
-        .replace(/ /g, '.')
-        .replace(/[čć]/g, 'c')
-        .replace(/š/g, 's')
-        .replace(/đ/g, 'dj')
-        .replace(/ž/g, 'z');
+        .replace(/\s+/g, '.') // Sve razmake menja u tačku
+        .replace(/đ/g, 'dj') // Specifična konverzija za đ
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Skida sve kvačice (č->c, š->s...)
+        .replace(/[^a-z0-9.]/g, ''); // Briše sve što nije slovo, broj ili tačka
 }
 
 // ==========================================================================
@@ -236,6 +245,29 @@ app.get('/api/admin/grupne-poruke-sve', (req, res) => {
     db.all("SELECT * FROM grupne_poruke ORDER BY id ASC", [], (err, rows) => {
         if (err) return res.status(500).json({ error: err.message });
         res.json(rows);
+    });
+});
+
+// ==========================================================================
+// RUTA ZA LOGIN KLIJENTA
+// ==========================================================================
+
+app.post('/api/login', (req, res) => {
+    const { korisnicko_ime, lozinka } = req.body;
+
+    if (!korisnicko_ime || !lozinka) {
+        return res.status(400).json({ error: 'Korisničko ime i lozinka su obavezni.' });
+    }
+
+    const sql = `SELECT * FROM clanovi WHERE korisnicko_ime = ? AND lozinka = ?`;
+    db.get(sql, [korisnicko_ime, lozinka], (err, clan) => {
+        if (err) {
+            return res.status(500).json({ error: err.message });
+        }
+        if (!clan) {
+            return res.status(401).json({ error: 'Pogrešno korisničko ime ili lozinka.' });
+        }
+        res.json({ id: clan.id, ime_prezime: clan.ime_prezime });
     });
 });
 

@@ -45,7 +45,7 @@
         .poruka-tekst { font-size: 0.9rem; color: #ADB5BD; line-height: 1.5; white-space: pre-wrap; }
         
         /* ČET PROSTOR */
-        .chat-poruke-prostor { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; margin-bottom: 15px; padding-right: 5px; margin-top: 10px; }
+        .chat-poruke-prostor { max-height: 300px; overflow-y: auto; display: flex; flex-direction: column; gap: 15px; margin-bottom: 5px; padding-right: 5px; margin-top: 5px; scroll-behavior: smooth; }
         .balon-red { display: flex; width: 100%; align-items: center; gap: 8px; }
         
         .balon-red.admin { justify-content: flex-start; } /* Poruke kluba - levo */
@@ -62,10 +62,10 @@
 
         .prazno-stanje { color: #868E96; font-size: 0.95rem; text-align: center; padding: 20px 0; font-weight: 500; }
         
-        .chat-forma { display: flex; gap: 10px; margin-bottom: 5px; background: transparent; padding: 0; }
-        .chat-input { flex: 1; padding: 14px 18px; background: #22262F; border: 1px solid rgba(255,255,255,0.05); color: #F8F9FA; border-radius: 12px; font-size: 0.95rem; transition: all 0.2s ease; }
+        .chat-forma { display: flex; gap: 10px; margin-top: 10px; margin-bottom: 0; background: transparent; padding: 0; width: 100%; }
+        .chat-input { flex: 1; padding: 14px 18px; background: #22262F; border: 1px solid rgba(255,255,255,0.05); color: #F8F9FA; border-radius: 12px; font-size: 0.95rem; transition: all 0.2s ease; min-width: 0; }
         .chat-input:focus { outline: none; border-color: #4DABF7; box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.15); }
-        .btn-posalji { background: #4DABF7; color: #121418; border: none; padding: 0 20px; border-radius: 12px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s ease; }
+        .btn-posalji { background: #4DABF7; color: #121418; border: none; padding: 0 20px; border-radius: 12px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s ease; flex-shrink: 0; }
         .btn-posalji:hover { background: #339AF0; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(77, 171, 247, 0.2); }
 
         @keyframes blinkaOko { 0% { opacity: 1; } 50% { opacity: 0.6; } 100% { opacity: 1; } }
@@ -118,18 +118,18 @@
 
     <div class="harmonika-sekcija" id="sekcija-chat">
         <div class="harmonika-zaglavlje" onclick="toggleSekcija('chat')">
-            <span style="color: #4DABF7;">💬 Privatni čet sa klubom</span>
+            <span style="color: #4DABF7;">💬 Poruka klubu</span>
             <div>
                 <span class="notifikacija-krug" id="chatBadge" style="margin-right: 8px;">NOVO</span>
                 <span class="harmonika-strelica" id="strelica-chat">▼</span>
             </div>
         </div>
         <div class="harmonika-sadrzaj">
+            <div class="chat-poruke-prostor" id="porukeProstor"></div>
             <form class="chat-forma" id="klijentChatForma">
                 <input type="text" class="chat-input" id="klijent_tekst" required placeholder="Napiši poruku klubu..." autocomplete="off">
                 <button type="submit" class="btn-posalji">Pošalji</button>
             </form>
-            <div class="chat-poruke-prostor" id="porukeProstor"></div>
         </div>
     </div>
 

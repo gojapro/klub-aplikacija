@@ -15,6 +15,9 @@
         .btn-glavni { background: #4DABF7; color: #121418; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 700; font-size: 0.95rem; cursor: pointer; transition: all 0.2s ease; display: flex; align-items: center; gap: 8px; }
         .btn-glavni:hover { background: #339AF0; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(77, 171, 247, 0.2); }
         
+        .btn-sekundarni { background: #22262F; color: #ADB5BD; border: 1px solid rgba(255,255,255,0.05); padding: 12px 24px; border-radius: 10px; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: all 0.2s ease; display: inline-flex; align-items: center; justify-content: center; }
+        .btn-sekundarni:hover { background: #2A2F39; color: #F8F9FA; transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
+
         .kontrole { display: flex; gap: 15px; margin-bottom: 25px; flex-wrap: wrap; }
         .input-polje { padding: 12px 16px; background: #1A1D24; border: 1px solid rgba(255,255,255,0.05); color: #F8F9FA; border-radius: 10px; font-size: 0.95rem; outline: none; transition: all 0.2s ease; }
         .input-polje:focus { border-color: #4DABF7; box-shadow: 0 0 0 3px rgba(77, 171, 247, 0.15); }
@@ -90,7 +93,7 @@
             <textarea id="porukaTekst" class="input-polje" style="width:100%; height:80px;"></textarea>
             <div style="margin-top:10px; display:flex; gap:10px;">
                 <button class="btn-glavni" onclick="posaljiPoruku()">Pošalji</button>
-                <button class="btn-akcija" onclick="zatvoriModal('chatModal')">Zatvori</button>
+                <button class="btn-sekundarni" onclick="zatvoriModal('chatModal')">Zatvori</button>
             </div>
         </div>
     </div>
@@ -157,13 +160,14 @@
                     <option value="UA">UA - Ukrajina</option>
                 </select>
                 <input type="email" id="novi_email" placeholder="E-mail (opciono)" class="input-polje" style="width:100%; margin-bottom:10px;">
-                <div style="margin-bottom:15px;">
-                    <label><input type="checkbox" id="novi_fit"> Fitnes</label>
-                    <label style="margin-left:15px;"><input type="checkbox" id="novi_bjj"> BJJ</label>
+                <label>Program</label>
+                <div style="display: flex; gap: 20px; margin-bottom: 15px;">
+                    <label style="display: flex; align-items: center; gap: 6px; margin: 0;"><input type="checkbox" id="novi_fit"> Fitnes</label>
+                    <label style="display: flex; align-items: center; gap: 6px; margin: 0;"><input type="checkbox" id="novi_bjj"> BJJ</label>
                 </div>
                 <div style="display:flex; gap:10px;">
-                    <button type="submit" class="btn-glavni">Sačuvaj</button>
-                    <button type="button" class="btn-akcija" onclick="zatvoriModal('clanModal')">Odustani</button>
+                    <button type="submit" class="btn-glavni">✔️ Sačuvaj</button>
+                    <button type="button" class="btn-sekundarni" onclick="zatvoriModal('clanModal')">❌ Odustani</button>
                 </div>
             </form>
         </div>
@@ -232,9 +236,10 @@
                     <option value="UA">UA - Ukrajina</option>
                 </select>
                 <input type="email" id="edit_email" placeholder="E-mail" class="input-polje" style="width:100%; margin-bottom:10px;">
-                <div style="margin-bottom:15px;">
-                    <label><input type="checkbox" id="edit_fit"> Fitnes</label>
-                    <label style="margin-left:15px;"><input type="checkbox" id="edit_bjj"> BJJ</label>
+                <label>Program</label>
+                <div style="display: flex; gap: 20px; margin-bottom: 15px;">
+                    <label style="display: flex; align-items: center; gap: 6px; margin: 0;"><input type="checkbox" id="edit_fit"> Fitnes</label>
+                    <label style="display: flex; align-items: center; gap: 6px; margin: 0;"><input type="checkbox" id="edit_bjj"> BJJ</label>
                 </div>
                 <div style="margin-bottom:15px;">
                     <label>Status</label>
@@ -244,8 +249,8 @@
                     </select>
                 </div>
                 <div style="display:flex; gap:10px;">
-                    <button type="submit" class="btn-glavni">Sačuvaj izmene</button>
-                    <button type="button" class="btn-akcija" onclick="zatvoriModal('editClanModal')">Odustani</button>
+                    <button type="submit" class="btn-glavni">✔️ Sačuvaj izmene</button>
+                    <button type="button" class="btn-sekundarni" onclick="zatvoriModal('editClanModal')">❌ Odustani</button>
                 </div>
             </form>
         </div>

@@ -2,6 +2,12 @@ const express = require('express');
 const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
+const webpush = require('web-push');
+
+// Podešavanje Web Push Notifikacija (VAPID ključevi)
+const publicVapidKey = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuB3IQ-lcI8w8G18O_QG219gE8';
+const privateVapidKey = 'K_fCxyxQv3f_u62Y1jTxyAOhD6D5_sT_yZ7z1g0D5Fk';
+webpush.setVapidDetails('mailto:info@totalfit.com', publicVapidKey, privateVapidKey);
 
 const app = express();
 const PORT = process.env.PORT || 5001;
@@ -71,6 +77,7 @@ db.run(`ALTER TABLE clanovi ADD COLUMN lozinka TEXT`, () => {});
 db.run(`ALTER TABLE clanovi ADD COLUMN adresa TEXT`, () => {});
 db.run(`ALTER TABLE clanovi ADD COLUMN grad TEXT`, () => {});
 db.run(`ALTER TABLE clanovi ADD COLUMN postanski_broj TEXT`, () => {});
+db.run(`ALTER TABLE clanovi ADD COLUMN push_pretplata TEXT`, () => {});
 db.run(`ALTER TABLE clanovi ADD COLUMN drzava TEXT DEFAULT 'AT'`, () => {
     // Automatski dodeli/popravi korisnička imena i lozinke svim postojećim članovima
     db.each(`SELECT id, ime_prezime, korisnicko_ime FROM clanovi`, (err, row) => {
@@ -172,6 +179,18 @@ app.post('/api/admin/poruke/individualna', (req, res) => {
     const sql = `INSERT INTO poruke (clan_id, posiljalac, tekst) VALUES (?, 'admin', ?)`;
     db.run(sql, [clan_id, tekst], function(err) {
         if (err) return res.status(500).json({ error: err.message });
+        
+        // Slanje Push Notifikacije klijentu
+        db.get(`SELECT push_pretplata FROM clanovi WHERE id = ?`, [clan_id], (err, row) => {
+            if (row && row.push_pretplata) {
+                try {
+                    const sub = JSON.parse(row.push_pretplata);
+                    const payload = JSON.stringify({ naslov: 'Total Fit', tekst: tekst });
+                    webpush.sendNotification(sub, payload).catch(e => console.error('Push greška:', e));
+                } catch (e) {}
+            }
+        });
+
         res.json({ message: "Poruka poslata klijentu!", poruka_id: this.lastID });
     });
 });
@@ -192,6 +211,24 @@ app.post('/api/admin/poruke/grupna', (req, res) => {
     const sql = `INSERT INTO grupne_poruke (naslov, tekst, filter) VALUES (?, ?, ?)`;
     db.run(sql, [naslov, tekst, filter || 'svi'], function(err) {
         if (err) return res.status(500).json({ error: err.message });
+        
+        // Slanje Push notifikacija svima koji odgovaraju filteru i imaju dozvoljen push
+        let query = `SELECT push_pretplata FROM clanovi WHERE push_pretplata IS NOT NULL AND status = 'Aktivan'`;
+        if (filter === 'fitness') query += ` AND fitness = 1`;
+        if (filter === 'bjj') query += ` AND bjj = 1`;
+        
+        db.all(query, [], (err, rows) => {
+            if (rows) {
+                const payload = JSON.stringify({ naslov: naslov, tekst: tekst });
+                rows.forEach(row => {
+                    try {
+                        const sub = JSON.parse(row.push_pretplata);
+                        webpush.sendNotification(sub, payload).catch(e => console.error(e));
+                    } catch(e) {}
+                });
+            }
+        });
+
         res.json({ message: "Grupno obaveštenje poslato!", grupna_id: this.lastID });
     });
 });
@@ -268,6 +305,17 @@ app.post('/api/login', (req, res) => {
             return res.status(401).json({ error: 'Pogrešno korisničko ime ili lozinka.' });
         }
         res.json({ id: clan.id, ime_prezime: clan.ime_prezime });
+    });
+});
+
+// Ruta za čuvanje push pretplate klijenta
+app.post('/api/pretplata', (req, res) => {
+    const { clan_id, pretplata } = req.body;
+    if (!clan_id || !pretplata) return res.status(400).json({ error: 'Fale podaci.' });
+    
+    db.run(`UPDATE clanovi SET push_pretplata = ? WHERE id = ?`, [JSON.stringify(pretplata), clan_id], (err) => {
+        if (err) return res.status(500).json({ error: err.message });
+        res.status(201).json({ message: 'Pretplata sačuvana' });
     });
 });
 

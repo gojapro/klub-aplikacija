@@ -4,6 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Total Fit - Prijava</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#121418">
+    <link rel="apple-touch-icon" href="totalfit_logo.png">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
@@ -32,9 +35,30 @@
         <div class="info-poruka">
             Vaše korisničko ime je obično u formatu "ime.prezime" (sve malim slovima, bez kvačica). Za lozinku se obratite treneru.
         </div>
+        <button id="installBtn" class="btn-prijava" style="display: none; margin-top: 15px; background: #FF8787; color: #121418;">📱 Instaliraj aplikaciju na telefon</button>
     </div>
 
     <script>
+        // Registracija Service Worker-a
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js').catch(err => console.error('PWA greška:', err));
+        }
+
+        // PWA Install Logika (Prikazuje dugme na Android/Chrome uređajima)
+        let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'block';
+        });
+        installBtn.addEventListener('click', async () => {
+            if (deferredPrompt) {
+                deferredPrompt.prompt();
+                deferredPrompt = null;
+            }
+        });
+
         // Proveravamo da li je korisnik već ulogovan
         if (localStorage.getItem('clan_id')) {
             window.location.href = 'profil.html';

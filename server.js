@@ -3,6 +3,7 @@ const cors = require('cors');
 const sqlite3 = require('sqlite3').verbose();
 const path = require('path');
 const webpush = require('web-push');
+const fs = require('fs');
 
 // Podešavanje Web Push Notifikacija (VAPID ključevi)
 const publicVapidKey = 'BEl62iUYgUivxIkv69yViEuiBIa-Ib9-SkvMeAtA3LFgDzkrxZJjSgSnfckjBJuB3IQ-lcI8w8G18O_QG219gE8';
@@ -17,7 +18,12 @@ app.use(express.json());
 app.use(express.static('public'));
 
 // Povezivanje sa SQLite bazom podataka
-const dbPath = path.resolve(__dirname, 'baza.sqlite');
+// Za Glitch: Baza mora biti u .data folderu da se ne bi obrisala pri restartu
+const dataDir = path.join(__dirname, '.data');
+if (!fs.existsSync(dataDir)) {
+    fs.mkdirSync(dataDir);
+}
+const dbPath = path.resolve(dataDir, 'baza.sqlite');
 const db = new sqlite3.Database(dbPath, (err) => {
     if (err) console.error('Greška pri spajanju na bazu:', err.message);
     else console.log('Povezan na SQLite bazu.');

@@ -300,7 +300,7 @@
         }
 
         async function ucitaj() {
-            const res = await fetch('/api/admin/clanovi?t=' + new Date().getTime(), {
+            const res = await fetch('/app/api/admin/clanovi?t=' + new Date().getTime(), {
                 cache: 'no-store'
             });
             sviClanovi = await res.json();
@@ -379,7 +379,7 @@
             document.getElementById('aktivan_clan_id').value = id;
             document.getElementById('chatNaslov').innerText = "Poruka za: " + ime;
             document.getElementById('chatModal').style.display = 'flex';
-            fetch(`/api/admin/poruke/procitano/${id}`, { method: 'PUT' });
+            fetch(`/app/api/admin/poruke/procitano/${id}`, { method: 'PUT' });
         }
 
         function otvoriModalClana() { document.getElementById('clanModal').style.display = 'flex'; }
@@ -388,7 +388,7 @@
         async function posaljiPoruku() {
             const id = document.getElementById('aktivan_clan_id').value;
             const txt = document.getElementById('porukaTekst').value;
-            await fetch('/api/admin/poruke/individualna', {
+            await fetch('/app/api/admin/poruke/individualna', {
                 method: 'POST',
                 headers: {'Content-Type': 'application/json'},
                 body: JSON.stringify({ clan_id: id, tekst: txt })
@@ -415,7 +415,7 @@
                     status: 'Aktivan'
                 };
 
-                const res = await fetch('/api/admin/clanovi', {
+                const res = await fetch('/app/api/admin/clanovi', {
                     method: 'POST',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(noviClan)
@@ -482,7 +482,7 @@
                     status: document.getElementById('edit_status').value
                 };
 
-                const res = await fetch(`/api/admin/clanovi/${id}`, {
+                const res = await fetch(`/app/api/admin/clanovi/${id}`, {
                     method: 'PUT',
                     headers: {'Content-Type': 'application/json'},
                     body: JSON.stringify(azuriranClan)

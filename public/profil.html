@@ -221,7 +221,7 @@
 
                     try {
                         subscription = await registration.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: urlBase64ToUint8Array(publicVapidKey) });
-                        await fetch('/api/pretplata', { method: 'POST', body: JSON.stringify({ clan_id: clanId, pretplata: subscription }), headers: { 'Content-Type': 'application/json' } });
+                        await fetch('/app/api/pretplata', { method: 'POST', body: JSON.stringify({ clan_id: clanId, pretplata: subscription }), headers: { 'Content-Type': 'application/json' } });
                         azurirajIzgledDugmetaPush();
                         prikaziObavestenje("Obaveštenja su uspešno uključena!");
                     } catch (error) {
@@ -333,7 +333,7 @@
 
         async function sakrijPrivatnuPoruku(id) {
             try {
-                const res = await fetch(`/api/admin/poruke/individualna/${id}`, { method: 'DELETE' });
+                const res = await fetch(`/app/api/admin/poruke/individualna/${id}`, { method: 'DELETE' });
                 if (res.ok) {
                     prikaziObavestenje('Poruka trajno obrisana.');
                     osveziSveSaServera();
@@ -343,7 +343,7 @@
 
         async function ucitajProfil() {
             try {
-                const res = await fetch('/api/admin/clanovi?t=' + new Date().getTime());
+                const res = await fetch('/app/api/admin/clanovi?t=' + new Date().getTime());
                 const clanovi = await res.json();
                 podaciOmeni = clanovi.find(c => c.id === clanId);
                 if (podaciOmeni) {
@@ -360,7 +360,7 @@
             if (!podaciOmeni) return;
             try {
                 // 1. Obrada grupnih obaveštenja
-                const resGrupne = await fetch('/api/admin/grupne-poruke-sve?t=' + new Date().getTime());
+                const resGrupne = await fetch('/app/api/admin/grupne-poruke-sve?t=' + new Date().getTime());
                 if (resGrupne.ok) {
                     const sveGrupne = await resGrupne.json();
                     const danasnjiDatum = new Date().toISOString().split('T')[0];
@@ -395,7 +395,7 @@
                 }
 
                 // 2. Obrada privatnog četa (razdvajanje strana)
-                const resChat = await fetch(`/api/admin/poruke/chat/${clanId}?t=` + new Date().getTime());
+                const resChat = await fetch(`/app/api/admin/poruke/chat/${clanId}?t=` + new Date().getTime());
                 if (resChat.ok) {
                     const svePoruke = await resChat.json();
                     const vidljivePoruke = svePoruke;
@@ -437,7 +437,7 @@
             e.preventDefault(); const t = document.getElementById('klijent_tekst').value;
             
             // Šaljemo na ispravnu klijentsku rutu koja upisuje 'clan' u bazu
-            await fetch('/api/admin/poruke/individualna-klijent', { 
+            await fetch('/app/api/admin/poruke/individualna-klijent', { 
                 method: 'POST', 
                 headers: { 'Content-Type': 'application/json' }, 
                 body: JSON.stringify({ clan_id: clanId, tekst: t }) 

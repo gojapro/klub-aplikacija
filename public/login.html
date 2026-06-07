@@ -61,7 +61,11 @@
 
         // Proveravamo da li je korisnik već ulogovan
         if (localStorage.getItem('clan_id')) {
-            window.location.href = 'profil.html';
+            if (localStorage.getItem('clan_ime') === 'Admin') {
+                window.location.href = 'index.html';
+            } else {
+                window.location.href = 'profil.html';
+            }
         }
 
         document.getElementById('loginForma').addEventListener('submit', async (e) => {
@@ -72,7 +76,7 @@
             errorPorukaDiv.style.display = 'none';
 
             try {
-                const res = await fetch('/api/login', {
+                const res = await fetch('/app/api/login', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ korisnicko_ime, lozinka })
@@ -83,15 +87,25 @@
                     // Čuvamo ID člana u lokalnoj memoriji
                     localStorage.setItem('clan_id', data.id);
                     localStorage.setItem('clan_ime', data.ime_prezime);
-                    // Preusmeravamo na profilnu stranicu
-                    window.location.href = 'profil.html';
+                    if (data.ime_prezime === 'Admin') {
+                        window.location.href = 'index.html';
+                    } else {
+                        window.location.href = 'profil.html';
+                    }
                 } else {
-                    const errData = await res.json();
-                    errorPorukaDiv.innerText = errData.error || 'Došlo je do greške.';
+                    // Proveravamo da li je server zaista vratio JSON ili se srušio pa vratio HTML
+                    const isJson = res.headers.get('content-type')?.includes('application/json');
+                    if (isJson) {
+                        const errData = await res.json();
+                        errorPorukaDiv.innerText = errData.error || 'Došlo je do greške.';
+                    } else {
+                        console.error("Server je srušen, vratio je HTML umesto JSON-a!");
+                        errorPorukaDiv.innerText = 'Greška: Server je trenutno nedostupan (Status ' + res.status + ').';
+                    }
                     errorPorukaDiv.style.display = 'block';
                 }
             } catch (err) {
-                errorPorukaDiv.innerText = 'Greška u komunikaciji sa serverom.';
+                errorPorukaDiv.innerText = 'Mrežna greška: Ne mogu da uspostavim vezu sa serverom.';
                 errorPorukaDiv.style.display = 'block';
             }
         });

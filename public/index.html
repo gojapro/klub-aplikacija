@@ -4,6 +4,19 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Total Fit - Početna</title>
+    <script>
+        // Zid: Provera da li je ulogovan i da li je Admin
+        const clanId = localStorage.getItem('clan_id');
+        const clanIme = localStorage.getItem('clan_ime');
+        if (!clanId) {
+            window.stop(); // Zaustavlja učitavanje sajta
+            window.location.replace('login.html'); // Baca na login
+        } else if (clanIme !== 'Admin') {
+            // Obični članovi nemaju pristup admin tabli
+            window.stop();
+            window.location.replace('profil.html');
+        }
+    </script>
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Inter', sans-serif; }
@@ -112,8 +125,12 @@
 <body>
 
     <div class="kontejner-centar">
-        <img src="totalfit_logo.png" alt="Total Fit" class="klub-logo">
-        <h1>Komandna Tabla</h1>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <div style="width: 100px;"></div> <!-- Prazan prostor za balansiranje -->
+            <img src="totalfit_logo.png" alt="Total Fit" class="klub-logo" style="margin-bottom: 0;">
+            <button class="btn-akcija" style="color: #FF8787; border-color: rgba(255, 135, 135, 0.3);" onclick="odjaviSeAdmin()">Odjavi se</button>
+        </div>
+        <h1 style="margin-top: -10px;">Komandna Tabla</h1>
 
         <div class="dashboard-grid">
 
@@ -318,12 +335,12 @@
 
         async function pokreniIndexPanel() {
             try {
-                const resStat = await fetch('/api/admin/statistika'); const s = await resStat.json();
+                const resStat = await fetch('/app/api/admin/statistika'); const s = await resStat.json();
                 document.getElementById('stat-ukupno').innerText = s.ukupno;
                 document.getElementById('stat-fitness').innerText = s.fitness;
                 document.getElementById('stat-bjj').innerText = s.bjj;
 
-                const res = await fetch('/api/admin/clanovi');
+                const res = await fetch('/app/api/admin/clanovi');
                 sviClanoviKes = await res.json();
                 generisiRodjendanskiKalendar(sviClanoviKes);
                 await ucitajObavestenja();
@@ -369,7 +386,7 @@
             try {
                 let svePoruke = [];
                 for (let clan of sviClanoviKes) {
-                    const res = await fetch(`/api/admin/poruke/chat/${clan.id}?t=` + new Date().getTime());
+                    const res = await fetch(`/app/api/admin/poruke/chat/${clan.id}?t=` + new Date().getTime());
                     if (res.ok) {
                         const liste = await res.json();
                         const klijentove = liste.filter(p => p.posiljalac === 'clan');
@@ -407,7 +424,7 @@
         async function posaljiGrupnoObavestenjeIndex(e) {
             e.preventDefault();
             const podaci = { filter: document.getElementById('grupni_filter').value, naslov: document.getElementById('grupni_naslov').value, tekst: document.getElementById('grupni_tekst').value };
-            const res = await fetch('/api/admin/poruke/grupna', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(podaci) });
+            const res = await fetch('/app/api/admin/poruke/grupna', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(podaci) });
             if(res.ok) { 
                 document.getElementById('grupnaFormaIndex').reset(); 
                 await ucitajObavestenja(); // Osvežava listu nakon slanja
@@ -428,7 +445,7 @@
 
         async function ucitajObavestenja() {
             try {
-                const res = await fetch('/api/admin/grupne-poruke-sve?t=' + new Date().getTime());
+                const res = await fetch('/app/api/admin/grupne-poruke-sve?t=' + new Date().getTime());
                 if(res.ok) {
                     let obavestenja = await res.json();
                     obavestenja.sort((a,b) => b.id - a.id); // Prikazuje najnovija na vrhu
@@ -489,7 +506,7 @@
         async function obrisiGrupnoObavestenje(event, id) {
             if (event) event.stopPropagation();
             try {
-                const res = await fetch(`/api/admin/poruke/grupna/${id}`, { method: 'DELETE' });
+                const res = await fetch(`/app/api/admin/poruke/grupna/${id}`, { method: 'DELETE' });
                 if (res.ok) {
                     prikaziObavestenje('Obaveštenje uspešno obrisano!');
                     await ucitajObavestenja();
@@ -525,7 +542,7 @@
 
         async function oznaciSveKaoProcitano() {
             try {
-                const res = await fetch('/api/admin/poruke/procitano-sve', { method: 'PUT' });
+                const res = await fetch('/app/api/admin/poruke/procitano-sve', { method: 'PUT' });
                 if (res.ok) {
                     svePorukeKes.forEach(p => p.procitano = 1);
                     document.querySelectorAll('.neprocitana').forEach(el => el.classList.remove('neprocitana'));
@@ -543,7 +560,7 @@
             document.getElementById('chatNaslovKlijenta').innerText = `Poruke: ${imePrezime}`; 
             document.getElementById('chatModal').style.display = 'flex'; 
             
-            fetch(`/api/admin/poruke/procitano/${clanId}`, { method: 'PUT' }).then(() => {
+            fetch(`/app/api/admin/poruke/procitano/${clanId}`, { method: 'PUT' }).then(() => {
                 let ostaloNeprocitanih = false;
                 svePorukeKes.forEach(p => { 
                     if (p.clan_id === clanId) p.procitano = 1; 
@@ -563,7 +580,7 @@
         function zatvoriModalCeta() { document.getElementById('chatModal').style.display = 'none'; }
         async function adminSakrijPoruku(id) { 
             try {
-                const res = await fetch(`/api/admin/poruke/individualna/${id}`, { method: 'DELETE' });
+                const res = await fetch(`/app/api/admin/poruke/individualna/${id}`, { method: 'DELETE' });
                 if (res.ok) {
                     prikaziObavestenje('Poruka trajno obrisana.');
                     osveziPorukeUCetu();
@@ -577,7 +594,7 @@
         }
         async function osveziPorukeUCetu() {
             const clanId = document.getElementById('chat_clan_id').value;
-            const res = await fetch(`/api/admin/poruke/chat/${clanId}?t=` + new Date().getTime()); const poruke = await res.json();
+            const res = await fetch(`/app/api/admin/poruke/chat/${clanId}?t=` + new Date().getTime()); const poruke = await res.json();
             const prostor = document.getElementById('chatPorukeProstor');
             prostor.innerHTML = poruke.map(p => {
                 const klasi = p.posiljalac === 'admin' ? 'admin' : 'clan';
@@ -589,8 +606,13 @@
         }
         async function posaljiPorukuKlijentu(e) {
             e.preventDefault(); const cid = document.getElementById('chat_clan_id').value; const txt = document.getElementById('admin_chat_tekst').value;
-            await fetch('/api/admin/poruke/individualna', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ clan_id: cid, tekst: txt }) });
+            await fetch('/app/api/admin/poruke/individualna', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ clan_id: cid, tekst: txt }) });
             document.getElementById('admin_chat_tekst').value = ''; osveziPorukeUCetu();
+        }
+
+        function odjaviSeAdmin() {
+            localStorage.clear();
+            window.location.href = 'login.html';
         }
         window.onload = pokreniIndexPanel;
     </script>
